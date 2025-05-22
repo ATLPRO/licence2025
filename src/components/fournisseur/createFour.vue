@@ -80,11 +80,11 @@ async function handleSubmit() {
             </div>
             <div class="col-md-4">
               <label class="form-label">Prénom</label>
-              <input v-model="prenomfour" type="text" class="form-control" required />
+              <input v-model="prenomfour" type="text" class="form-control"  />
             </div>
             <div class="col-md-4">
               <label class="form-label">Téléphone 1*</label>
-              <input v-model="tel1four" type="tel" class="form-control" />
+              <input v-model="tel1four" type="tel" class="form-control" required/>
             </div>
             <div class="col-md-4">
               <label class="form-label">Téléphone 2</label>
@@ -92,19 +92,19 @@ async function handleSubmit() {
             </div>
             <div class="col-md-4">
               <label class="form-label">Adresse *</label>
-              <input v-model="adressefour" type="text" class="form-control" />
+              <input v-model="adressefour" type="text" class="form-control" required/>
             </div>
             <div class="col-md-4">
               <label class="form-label">Chiffre d'affaires *</label>
-              <input v-model="cafour" type="number" min="0" class="form-control" />
+              <input v-model="cafour" type="number" min="0" class="form-control" required/>
             </div>
             <div class="col-md-4">
               <label class="form-label">Solde initial *</label>
-              <input v-model="soldefour" type="number" min="0" class="form-control" />
+              <input v-model="soldefour" type="number" min="0" class="form-control" required/>
             </div>
             <div class="col-md-4">
               <label class="form-label">Solde final*</label>
-              <input v-model="soldeinitfour" type="number" min="0" class="form-control" />
+              <input v-model="soldeinitfour" type="number" min="0" class="form-control" required/>
             </div>
           </div>
  <!-- Afficher l'erreur ou le succes selon le cas -->

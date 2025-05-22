@@ -80,7 +80,7 @@ const handleSubmit = async () => {
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label">Code*</label>
-              <input :value="codeMag" type="text" class="form-control" readonly />
+              <input :value="codeMag" type="text" class="form-control" required />
             </div>
             <div class="col-md-6">
               <label class="form-label">Nom*</label>
