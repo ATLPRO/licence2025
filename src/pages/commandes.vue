@@ -2,7 +2,40 @@
 import createCom from '@/components/commande/createCom.vue';
 import detailCom from '@/components/commande/detailCom.vue';
 import UpdateCom from '@/components/commande/updateCom.vue';
-  const commandes = [
+import { ref } from 'vue';
+  
+// État des modals
+const showAjout = ref(false)
+const showModifier = ref(false)
+const shawDetail=ref(false)
+// Fonctions modals
+const openAjoutModal = () => {
+  showAjout.value = true
+}
+
+const closeAjoutModal = () => {
+  showAjout.value = false
+}
+//Ouvrir la page de modification avec les elements a modifier
+const fourAEditer = ref(null)
+function openModifier() {
+  //fourAEditer.value = fournisseur
+  showModifier.value = true
+}
+
+const closeModifierModal = () => {
+  showModifier.value = false
+  codefour.value = null
+}
+//ouvrir le detail
+function openDetail(){
+  shawDetail.value=true
+}
+const closeDetail = () => {
+  shawDetail.value = false
+  //codefour.value = null
+}
+const commandes = [
     {
       numcommande: 'CMD001',
       nomfour: 'Kouadio & Fils',
@@ -32,10 +65,10 @@ import UpdateCom from '@/components/commande/updateCom.vue';
       <!-- Boutons et recherche -->
       <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <div class="btn-group">
-          <button class="btn btn-secondary btn-sm"  data-bs-toggle="modal" data-bs-target="#modalDetail">Détail</button>
-          <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCommande">Nouveau</button>
-          <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalUpdate">Modifier</button>
-          <button class="btn btn-secondary btn-sm">Supprimer</button>
+          <button @click="openDetail" class="btn btn-secondary btn-sm" >Détail</button>
+          <button class="btn btn-secondary btn-sm" @click="openAjoutModal">Nouveau</button>
+          <button class="btn btn-secondary btn-sm" @click="openModifier">Modifier</button>
+          
         </div>
         <div class="input-group" style="max-width: 200px;">
           <input type="text" class="form-control form-control-sm" placeholder="Rechercher...">
@@ -52,6 +85,7 @@ import UpdateCom from '@/components/commande/updateCom.vue';
               <th>Nom Fournisseur</th>
               <th style="min-width: 100px;">Référence</th>
               <th>Date</th>
+               <th>Montant total(FCFA)</th>
               <th style="min-width: 130px;">Action</th>
             </tr>
           </thead>
@@ -62,10 +96,10 @@ import UpdateCom from '@/components/commande/updateCom.vue';
               <td>{{ commande.reference }}</td>
               <td>{{ commande.datecom }}</td>
               <td class="text-center">
-                <button class="btn btn-sm text-success border-0 me-1" title="Nouveau">
+                <button @click="openAjoutModal" class="btn btn-sm text-success border-0 me-1" title="Nouveau">
                   <i class="bi bi-plus-circle"></i>
                 </button>
-                <button class="btn btn-sm text-warning border-0 me-1" title="Modifier">
+                <button @click="openModifier" class="btn btn-sm text-warning border-0 me-1" title="Modifier">
                   <i class="bi bi-pencil-square"></i>
                 </button>
                 <button class="btn btn-sm text-danger border-0" title="Supprimer">
@@ -83,48 +117,51 @@ import UpdateCom from '@/components/commande/updateCom.vue';
       </div>
     </div>
 
-    <!-- Modal de creation -->
-<div class="modal fade" id="modalCommande" tabindex="-1" aria-labelledby="modalAjoutLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header bg-primary text-white ">
-        <h5 class="modal-title" id="modalAjoutLabel">Nouvelle commande</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-      </div>
-      <div class="modal-body">
-       <createCom/>
+    <!-- Modal d’AJOUT -->
+  <div v-if="showAjout" class="modal-backdrop fade show"></div>
+  <div v-if="showAjout" class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Ajouter une commande</h5>
+          <button class="btn-close" @click="closeAjoutModal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <createCom @close="closeAjoutModal" />
+        </div>
       </div>
     </div>
   </div>
-</div>
  <!-- Modal de detail -->
- <div class="modal fade" id="modalDetail" tabindex="-1" aria-labelledby="modalAjoutLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header bg-primary text-white ">
-        <h5 class="modal-title" id="modalAjoutLabel">Detail de la commande</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-      </div>
-      <div class="modal-body">
-       <detailCom/>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- Modal de Update -->
-<div class="modal fade" id="modalUpdate" tabindex="-1" aria-labelledby="modalAjoutLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header bg-primary text-white ">
-        <h5 class="modal-title" id="modalAjoutLabel">Modifier une commande</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-      </div>
-      <div class="modal-body">
-       <UpdateCom/>
+ <div v-if="shawDetail" class="modal-backdrop fade show"></div>
+  <div v-if="shawDetail" class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Detail de la commande</h5>
+          <button class="btn-close" @click="closeDetail" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <detailCom  @close="closeDetail" />
+        </div>
       </div>
     </div>
   </div>
-</div>
+ <!-- Modal de MODIFICATION -->
+  <div v-if="showModifier" class="modal-backdrop fade show"></div>
+  <div v-if="showModifier" class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Modifier une commande</h5>
+          <button class="btn-close" @click="closeModifierModal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <UpdateCom  @close="closeModifierModal" />
+        </div>
+      </div>
+    </div>
+  </div>
   </template>
   
   <style scoped>

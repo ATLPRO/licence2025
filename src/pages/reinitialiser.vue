@@ -52,7 +52,7 @@ async function handleReset() {
 </script>
 
 <template>
-  <div class="d-flex justify-content-center align-items-center min-vh-100 bg-light">
+  <div class="container-fluid d-flex justify-content-center align-items-center min-vh-100 bg-light">
     <div class="card p-4 shadow" style="width: 100%; max-width: 400px">
       <h3 class="text-center text-primary mb-4">Mot de passe oublié</h3>
 
@@ -81,4 +81,10 @@ async function handleReset() {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.container-fluid {
+  background: url('../assets/icons/bg.jpg') no-repeat center center;
+  background-size: cover;
+ 
+  } 
+</style>

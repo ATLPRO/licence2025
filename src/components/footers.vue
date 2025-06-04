@@ -10,5 +10,8 @@
     </footer>
   </template>
   
-  <style scoped></style>
+  <style scoped>
+footer{
+  flex-shrink: 0;
+}</style>
   

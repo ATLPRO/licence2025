@@ -64,9 +64,7 @@ async function handleSubmit() {
 <template>
   <div class="container py-4">
     <div class="card shadow">
-      <!-- <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Ajouter un Fournisseur</h5>
-      </div> -->
+      
       <div class="card-body">
         <form @submit.prevent="handleSubmit">
           <div class="row g-3">

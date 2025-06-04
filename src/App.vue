@@ -11,9 +11,11 @@ const authPages = ['/connexion', '/inscription', '/reinitialiser']
 
 <template>
   <!-- Affiche uniquement la page (connexion, inscription, etc.) sans layout -->
-  <div v-if="authPages.includes(route.path)">
+  <div v-if="authPages.includes(route.path)" class="auth-layout">
     <headers/>
-    <router-view />
+    <div class="auth-content">
+      <router-view />
+    </div>
     <footers/>
   </div>
 
@@ -21,8 +23,7 @@ const authPages = ['/connexion', '/inscription', '/reinitialiser']
   <div v-else class="d-flex flex-column min-vh-100">
     <headers />
     <div class="flex-grow-1 d-flex flex-column flex-md-row">
-      <!-- Sidebar -->
-      <div class=" side bg-dark text-white p-2  ">
+      <div class="side bg-dark text-white p-2">
         <sidebar />
       </div>
       <main class="flex-grow-1 p-2 bg-light">
@@ -39,6 +40,24 @@ const authPages = ['/connexion', '/inscription', '/reinitialiser']
   max-width: 250px;
   float: left;
 }
+.auth-layout {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: url('./assets/icons/bg.jpg') no-repeat center center;
+  background-size: cover;
+}
+
+.auth-content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+
 
 @media (max-width:780px) {
   .side{

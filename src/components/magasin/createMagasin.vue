@@ -92,9 +92,9 @@ const router = useRouter()
             <button type="submit" class="btn btn-success">
               <i class="bi bi-check-circle me-1"></i> Ajouter
             </button>
-            <router-link to="/magasin" class="btn btn-secondary">
+            <button @click="$emit('close')"  class="btn btn-secondary">
               <i class="bi bi-x-circle me-1"></i> Annuler
-            </router-link>
+            </button>
           </div>
         </form>
       </div>

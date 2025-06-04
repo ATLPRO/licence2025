@@ -17,6 +17,7 @@ onMounted(async () => {
     const res = await fetch('http://localhost/apiLicence2025/controller/magasin/getMagasins.php?host=localhost&dbname=licence2025&username=root&password=')
     if (!res.ok) throw new Error("Erreur serveur")
     magasins.value = await res.json()
+    magasins.value = magasins.value.filter(m => m.supprimer)
   } catch (err) {
     error.value = "Impossible de charger les magasins"
     console.error(err)
@@ -27,12 +28,13 @@ onMounted(async () => {
 async function deleteMagasin(codeMag) {
   if (!confirm("Confirmer la suppression du magasin ?")) return;
   try {
-    const res = await fetch(`http://localhost/apiLicence2025/controller/magasin/deleteMagasin.php?host=localhost&dbname=licence2025&username=root&password=`, {
-      method: 'DELETE',
+    const res = await fetch(`http://localhost/apiLicence2025/controller/magasin/supprimerVirtuellement.php?host=localhost&dbname=licence2025&username=root&password=`, {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ codeMag })
     });
     const result = await res.json();
+    console.log("donnees",result);
     if (result.success) {
       magasins.value = magasins.value.filter(m => m.codeMag !== codeMag);
       alert(result.message);

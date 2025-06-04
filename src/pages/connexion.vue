@@ -20,8 +20,11 @@ const login = async () => {
     error.value = "Identifiants incorrects"
   }
   else{
-    //console.log("Connexion réussie, redirection...")
-    localStorage.setItem('users', JSON.stringify(responseData.value));
+    // Récupère le premier (et unique) utilisateur retourné par l'API
+  const utilisateur = responseData.value[0]
+
+  // Stocke-le proprement dans localStorage
+  localStorage.setItem('utilisateurConnecte', JSON.stringify(utilisateur));
     //console.log("Rôle :", responseData.value.role)
 
     localStorage.setItem('auth', 'true')
@@ -40,7 +43,7 @@ const login = async () => {
 </script>
 
 <template>
-  <div class="container d-flex justify-content-center align-items-center min-vh-100 bg-light ">
+  <div class="container-fluid d-flex justify-content-center align-items-center min-vh-100 bg-light ">
     <div class="card p-4 shadow " style="min-width: 350px;">
       <h3 class="text-center text-primary mb-3">Connexion</h3>
       <div v-if="error" class="alert alert-danger">{{ error }}</div>
@@ -59,4 +62,9 @@ const login = async () => {
 
 <style scoped>
 
+.container-fluid {
+  background: url('../assets/icons/bg.jpg') no-repeat center center;
+  background-size: cover;
+ 
+  } 
 </style>

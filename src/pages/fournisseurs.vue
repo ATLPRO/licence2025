@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted,computed } from 'vue'
 import createFour from '@/components/fournisseur/createFour.vue';
 import updateFour from '@/components/fournisseur/updateFour.vue';
 
@@ -18,9 +18,10 @@ const openAjoutModal = () => {
 const closeAjoutModal = () => {
   showAjout.value = false
 }
-
-const openModifierModal = (code) => {
-  codefour.value = code
+//Ouvrir la page de modification avec les elements a modifier
+const fourAEditer = ref(null)
+function openModifierModal(fournisseur) {
+  fourAEditer.value = fournisseur
   showModifier.value = true
 }
 
@@ -30,6 +31,7 @@ const closeModifierModal = () => {
 }
 const fournisseur = ref([])
 const error = ref('')
+
 //afficher les fours
 onMounted(async () => {
   try {
@@ -43,10 +45,10 @@ onMounted(async () => {
 })
   //supprimer le four
 async function deleteFour(codefour) {
-  if (!confirm("Confirmer la suppression du fournisseur ?")) return;
+  if (!confirm("Confirmer la suppression du fournisseur ? ")) return;
   try {
-    const res = await fetch(`http://localhost/apiLicence2025/controller/fournisseur/deletefournisseur.php?host=localhost&dbname=licence2025&username=root&password=`, {
-      method: 'DELETE',
+    const res = await fetch(`http://localhost/apiLicence2025/controller/fournisseur/supprimerVirtuellement.php?host=localhost&dbname=licence2025&username=root&password=`, {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ codefour })
     });
@@ -62,6 +64,18 @@ async function deleteFour(codefour) {
     alert("Erreur de suppression.");
   }
 }
+
+// Filtrage des fournisseure selon le champ de recherche
+const recherche = ref('')
+const fourFiltres = computed(() => {
+  const texte = recherche.value.toLowerCase().trim()
+  if (!texte) return fournisseur.value
+  return fournisseur.value.filter(fournisseur =>
+  fournisseur.nomfour.toLowerCase().includes(texte) ||
+  fournisseur.codefour.toLowerCase().includes(texte)
+  )
+})
+
   </script>
 
 <template>
@@ -85,7 +99,7 @@ async function deleteFour(codefour) {
           <button class="btn btn-secondary btn-sm">Supprimer</button> -->
         </div>
         <div class="input-group" style="max-width: 200px;">
-          <input type="text" class="form-control form-control-sm" placeholder="Rechercher...">
+          <input v-model="recherche" type="text" class="form-control form-control-sm" placeholder="Rechercher...">
           <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-search"></i></button>
         </div>
       </div>
@@ -102,39 +116,45 @@ async function deleteFour(codefour) {
               <th style="min-width: 100px;">Tél 1</th>
               <th style="min-width: 100px;">Tél 2</th>
               <th style="min-width: 100px;">Adresse</th>
-              <th style="min-width: 100px;">CA</th>
-              <th style="min-width: 100px;">Solde initial</th>
-              <th style="min-width: 100px;">Solde final</th>
+              <th style="min-width: 100px;">CA(FCFA)</th>
+              <th style="min-width: 100px;">Solde initial(FCFA)</th>
+              <th style="min-width: 100px;">Solde final(FCFA)</th>
               <th style="min-width: 130px;">Action</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(fournisseur, index) in fournisseur" :key="index">
+            <!-- charger depuis la bd -->
+            <tr v-for="(fournisseur, index) in fourFiltres" :key="index">
               <td>{{ fournisseur.codefour }}</td>
               <td>{{ fournisseur.nomfour }}</td>
               <td>{{ fournisseur.prenomfour }}</td>
               <td>{{ fournisseur.tel1four }}</td>
               <td>{{ fournisseur.tel2four }}</td>
               <td>{{ fournisseur.adressefour }}</td>
-              <td>{{ fournisseur.cafour }} FCFA</td>
-              <td>{{ fournisseur.soldefour }} FCFA</td>
-              <td>{{ fournisseur.soldeinitfour }} FCFA</td>
+              <td>{{ fournisseur.cafour }} </td>
+              <td>{{ fournisseur.soldefour }} </td>
+              <td>{{ fournisseur.soldeinitfour }} </td>
               <td class="text-center">
                 <button @click="openAjoutModal" class="btn btn-sm text-success border-0 me-1" title="Nouveau">
                   <i class="bi bi-plus-circle"></i>
                 </button>
-                <button @click="openModifierModal(codefour)" class="btn btn-sm text-warning border-0 me-1" title="Modifier">
+                <button @click="openModifierModal(fournisseur)" class="btn btn-sm text-warning border-0 me-1" title="Modifier">
                   <i class="bi bi-pencil-square"></i>
                 </button>
-                <button @click="deleteFour(codefour)" class="btn btn-sm text-danger border-0" title="Supprimer">
+                <button @click="deleteFour(fournisseur.codefour)" class="btn btn-sm text-danger border-0" title="Supprimer">
                   <i class="bi bi-trash"></i>
                 </button>
               </td>
             </tr>
+            <tr v-if="fourFiltres.length === 0">
+          <td colspan="3" class="text-center text-muted">Aucun article trouvé</td>
+        </tr>
           </tbody>
         </table>
       </div>
-  
+  <!-- Total  -->
+    
+  <div class="text-muted justify-content-right mt-3">Total fournisseurs : {{ fourFiltres.length  }}</div>
     </div>
   
   <!-- Modal d’AJOUT -->
@@ -163,7 +183,7 @@ async function deleteFour(codefour) {
           <button class="btn-close" @click="closeModifierModal" aria-label="Fermer"></button>
         </div>
         <div class="modal-body">
-          <updateFour :codefour="codefour" @close="closeModifierModal" />
+          <updateFour :fournisseur="fourAEditer" @close="closeModifierModal" />
         </div>
       </div>
     </div>

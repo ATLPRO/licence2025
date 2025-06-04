@@ -3,34 +3,26 @@
 import { ref,onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
-// Liste des familles enregistrées
-const famille = ref([])
+// Liste des fonction enregistrées
+const fonction = ref([])
 
-// Formulaire de création
-const nouvelleFamille = ref({
-  intitule: '',
-  abreviation: ''
-})
-
-const abreviation = ref('') 
 const intitule=ref('')
 const error = ref('')
 const success = ref('')
 const router = useRouter()
 
- async function ajouterFamille() {
+ async function ajouterFonction() {
   error.value = ''
   success.value = ''
-  if (!abreviation.value || !intitule.value) {
-    error.value = "Tous les champs sont requis."
+  if ( !intitule.value) {
+    error.value = "Tous le champs est requis."
     return
   }
   const payload = {
-    abreviationFam:abreviation.value,
-    intituleFam: intitule.value,
+    intituleFonc: intitule.value,
   }
   try {
-    const res = await fetch('http://localhost/apiLicence2025/controller/famille/addfamille.php?host=localhost&dbname=licence2025&username=root&password=', {
+    const res = await fetch('http://localhost/apiLicence2025/controller/fonction/addfonction.php?host=localhost&dbname=licence2025&username=root&password=', {
 
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -40,12 +32,11 @@ const router = useRouter()
     const data = await res.json()
 
     if (res.ok) {
-      success.value = data.message || "Famille crée avec succès."
-      await chargerFamilles() // ✅ Recharge la liste automatiquement
+      success.value = data.message || "Fonction crée avec succès."
+      await chargerFonction() // ✅ Recharge la liste automatiquement
       // Petite pause avant redirection
       setTimeout(() => {
         intitule.value=''
-        abreviation.value=''
         
       }, 1500)
     } else {
@@ -56,27 +47,27 @@ const router = useRouter()
     console.error(e)
   }
 }
-//recharger les familles apres ajout reussi
-async function chargerFamilles() {
+//recharger les fonction apres ajout reussi
+async function chargerFonction() {
   try {
-    const res = await fetch('http://localhost/apiLicence2025/controller/famille/readAllfamille.php?host=localhost&dbname=licence2025&username=root&password=')
+    const res = await fetch('http://localhost/apiLicence2025/controller/fonction/readfonction.php?host=localhost&dbname=licence2025&username=root&password=')
     if (!res.ok) throw new Error("Erreur serveur")
-    famille.value = await res.json()
+    fonction.value = await res.json()
   } catch (err) {
-    error.value = "Impossible de charger les familles d'articles"
+    error.value = "Impossible de charger les fonctions"
     console.error(err)
   }
 }
 
 // Fonction pour afficher le familles
-onMounted(chargerFamilles(), async () => {
+onMounted(chargerFonction(), async () => {
   try {
-    const res = await fetch('http://localhost/apiLicence2025/controller/famille/readAllfamille.php?host=localhost&dbname=licence2025&username=root&password=')
+    const res = await fetch('http://localhost/apiLicence2025/controller/fonction/readfonction.php?host=localhost&dbname=licence2025&username=root&password=')
     if (!res.ok) throw new Error("Erreur serveur")
-    famille.value = await res.json()
+    fonction.value = await res.json()
     //famille.value = famille.value.filter(m => m)
   } catch (err) {
-    error.value = "Impossible de charger les familles d'articles"
+    error.value = "Impossible de charger les fonctions "
     console.error(err)
   }
 })
@@ -86,20 +77,17 @@ onMounted(chargerFamilles(), async () => {
   <div class="container py-4">
     <div class="card shadow mb-4">
       <div class="card-body">
-        <h5 class="mb-3 text-primary">Ajouter une Famille d'Articles</h5>
-        <form @submit.prevent="ajouterFamille">
+        <h5 class="mb-3 text-primary">Ajouter une fonction </h5>
+        <form @submit.prevent="ajouterFonction">
            <!-- Afficher l'erreur ou le succes selon le cas -->
       <div v-if="error" class="alert alert-danger">{{ error }}</div>
       <div v-if="success" class="alert alert-success">{{ success }}</div>
           <div class="row g-3">
             <div class="col-md-6">
-              <label class="form-label">Intitulé de la famille</label>
+              <label class="form-label">Intitulé de la fonction</label>
               <input v-model="intitule" type="text" class="form-control" required />
             </div>
-            <div class="col-md-6">
-              <label class="form-label">Abréviation</label>
-              <input v-model="abreviation" type="text" class="form-control" required />
-            </div>
+            
           </div>
           <div class="mt-3">
             <button type="submit" class="btn btn-success">
@@ -113,23 +101,21 @@ onMounted(chargerFamilles(), async () => {
     <!-- Tableau des familles -->
     <div class="card shadow">
       <div class="card-body">
-        <h5 class="mb-3 text-primary">Liste des Familles</h5>
+        <h5 class="mb-3 text-primary">Liste des fonctions</h5>
         <table class="table table-bordered table-striped">
           <thead class="table-light">
             <tr>
               <th>#</th> 
-              <th>Intitulé</th>
-              <th>Abréviation</th>
+              <th>Intitulé fonction</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(famille, index) in famille" :key="index">
+            <tr v-for="(fonction, index) in fonction" :key="index">
               <td>{{ index + 1 }}</td> 
-              <td>{{ famille.intituleFam }}</td>
-              <td>{{ famille.abreviationFam }}</td>
+              <td>{{ fonction.intituleFonc }}</td>
             </tr>
-            <tr v-if="famille.length === 0">
-              <td colspan="3" class="text-center text-muted">Aucune famille enregistrée</td>
+            <tr v-if="fonction.length === 0">
+              <td colspan="3" class="text-center text-muted">Aucune fonction enregistrée</td>
             </tr>
           </tbody>
         </table>

@@ -109,6 +109,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
+
 .card-body{
   width: 650px;
 }

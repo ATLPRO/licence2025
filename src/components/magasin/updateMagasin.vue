@@ -50,7 +50,7 @@ const handleSubmit = async () => {
       typeMag: type.value
     }
     const res = await fetch(`http://localhost/apiLicence2025/controller/magasin/updateMagasin.php?host=localhost&dbname=licence2025&username=root&password=`, {
-      method: 'PUT',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     })
