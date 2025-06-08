@@ -13,14 +13,17 @@ const sexepers = ref('')
 const statutpers = ref('')
 const idfonc = ref('')
 const idserv = ref('')
+const id=ref('')
 const message = ref('')
 
 const fonction = ref([])
 const service = ref([])
+const users = ref([])
 
 onMounted(() => {
   chargerFonction()
   chargerService()
+  chargerusers()
 })
 
 //charger les fonction 
@@ -45,6 +48,17 @@ async function chargerService() {
     console.error(err)
   }
 }
+async function chargerusers() {
+  try {
+    const res = await fetch('http://localhost/apiLicence2025/controller/users/readusers.php?host=localhost&dbname=licence2025&username=root&password=')
+    if (!res.ok) throw new Error("Erreur serveur")
+    users.value = await res.json()
+  console.log("users",users.value)
+  } catch (err) {
+    message.value = "Impossible de charger les users"
+    console.error(err)
+  }
+}
 const ajouterPersonnel = async () => {
   const data = {
     matriculePers: matriculePers.value,
@@ -58,7 +72,8 @@ const ajouterPersonnel = async () => {
     sexepers: sexepers.value,
     statutpers: statutpers.value,
     idfonc: idfonc.value,
-    idserv: idserv.value
+    idserv: idserv.value,
+    id: id.value
   }
 
   try {
@@ -140,11 +155,11 @@ const resetForm = () => {
                 <option value="F">Féminin</option>
               </select>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
               <label class="form-label">Statut</label>
               <input v-model="statutpers" class="form-control" />
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
               <label class="form-label">Fonction</label>
               <select v-model="idfonc" class="form-select" required>
                 <option value="">-- Sélectionner une fonction --</option>
@@ -153,12 +168,21 @@ const resetForm = () => {
                 </option>
               </select>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
               <label class="form-label">Service</label>
               <select v-model="idserv" class="form-select" required>
                 <option value="">-- Sélectionner un service --</option>
                 <option v-for="s in service" :key="s.idserv" :value="s.idserv">
                   {{ s.intituleServ }}
+                </option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Utilisateur?</label>
+              <select v-model="id" class="form-select" >
+                <option  value="">-- Sélectionner un utilisateur --</option>
+                <option v-for="u in users" :key="u.id" :value="u.id">
+                  {{ u.nom }}
                 </option>
               </select>
             </div>

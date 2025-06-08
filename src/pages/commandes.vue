@@ -2,12 +2,13 @@
 import createCom from '@/components/commande/createCom.vue';
 import detailCom from '@/components/commande/detailCom.vue';
 import UpdateCom from '@/components/commande/updateCom.vue';
-import { ref } from 'vue';
+import { ref,onMounted,computed } from 'vue';
   
 // État des modals
 const showAjout = ref(false)
 const showModifier = ref(false)
 const shawDetail=ref(false)
+
 // Fonctions modals
 const openAjoutModal = () => {
   showAjout.value = true
@@ -17,38 +18,102 @@ const closeAjoutModal = () => {
   showAjout.value = false
 }
 //Ouvrir la page de modification avec les elements a modifier
-const fourAEditer = ref(null)
-function openModifier() {
-  //fourAEditer.value = fournisseur
+const comAEditer = ref(null)
+/* function openModifier(commande) {
+  comAEditer.value = commande
   showModifier.value = true
-}
+} */
 
 const closeModifierModal = () => {
   showModifier.value = false
-  codefour.value = null
+  //codefour.value = null
 }
 //ouvrir le detail
-function openDetail(){
-  shawDetail.value=true
+const commandeSelectionnee = ref(null)
+function openDetail(commande) {
+  commandeSelectionnee.value = commande
+  shawDetail.value = true
 }
+
 const closeDetail = () => {
   shawDetail.value = false
   //codefour.value = null
 }
-const commandes = [
-    {
-      numcommande: 'CMD001',
-      nomfour: 'Kouadio & Fils',
-      reference: 'REF-A-001',
-      datecom: '2025-05-01'
-    },
-    {
-      numcommande: 'CMD002',
-      nomfour: 'AgroTech CI',
-      reference: 'REF-B-002',
-      datecom: '2025-05-02'
+const commande=ref([])
+//afficher les commandes
+onMounted(async () => {
+  try {
+    const res = await fetch('http://localhost/apiLicence2025/controller/commande/readcom.php?host=localhost&dbname=licence2025&username=root&password=')
+    if (!res.ok) throw new Error("Erreur serveur")
+    commande.value = await res.json()
+  } catch (err) {
+    error.value = "Impossible de charger les commandes"
+    console.error(err)
+  }
+})
+async function openModifier(commande) {
+  try {
+    const res = await fetch(`http://localhost/apiLicence2025/controller/commande/readLigneCom.php?host=localhost&dbname=licence2025&username=root&password=`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ idcom: commande.idcom })  // Assure-toi que "commande.idcom" existe
+    });
+
+    if (!res.ok) throw new Error("Erreur HTTP: " + res.status);
+
+    const lignes = await res.json();
+
+    comAEditer.value = {
+      ...commande,
+      lignes: lignes.map(l => ({
+        articleId: parseInt(l.idArt),
+        desArt: l.desArt,
+        quantite: parseFloat(l.qteC),
+        prixUnitaire: parseFloat(l.puC),
+        uniteId: l.intituleU,
+        idu:parseInt(l.idU)
+      }))
+    };
+
+    showModifier.value = true;
+  } catch (error) {
+    console.error("Erreur chargement lignes commande :", error);
+    alert("Impossible de charger les lignes de la commande.");
+  }
+}
+
+async function deletecom(numcom) {
+  if (!confirm("Confirmer la suppression de cette commande?")) return;
+  try {
+    const res = await fetch(`http://localhost/apiLicence2025/controller/commande/supprimerVirtuellement.php?host=localhost&dbname=licence2025&username=root&password=`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ numcom })
+    });
+    const result = await res.json();
+    if (result.success) {
+      commande.value = commande.value.filter(c => c.numcom !== numcom);
+      alert(result.message);
+    } else {
+      alert(result.message);
     }
-  ]
+  } catch (err) {
+    console.error(err);
+    alert("Erreur de suppression.");
+  }
+}
+// Filtrage des magasins selon le champ de recherche
+const recherche = ref('')
+const comFiltres = computed(() => {
+  const texte = recherche.value.toLowerCase().trim()
+  if (!texte) return commande.value
+  return commande.value.filter(commande =>
+    commande.numcom.toLowerCase().includes(texte) ||
+    commande.refcom.toLowerCase().includes(texte)
+  )
+})
   </script>
 
 <template>
@@ -65,13 +130,10 @@ const commandes = [
       <!-- Boutons et recherche -->
       <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <div class="btn-group">
-          <button @click="openDetail" class="btn btn-secondary btn-sm" >Détail</button>
           <button class="btn btn-secondary btn-sm" @click="openAjoutModal">Nouveau</button>
-          <button class="btn btn-secondary btn-sm" @click="openModifier">Modifier</button>
-          
         </div>
         <div class="input-group" style="max-width: 200px;">
-          <input type="text" class="form-control form-control-sm" placeholder="Rechercher...">
+          <input v-model="recherche" type="text" class="form-control form-control-sm" placeholder="Rechercher...">
           <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-search"></i></button>
         </div>
       </div>
@@ -86,35 +148,43 @@ const commandes = [
               <th style="min-width: 100px;">Référence</th>
               <th>Date</th>
                <th>Montant total(FCFA)</th>
+                <th>Magasins de stock</th> 
               <th style="min-width: 130px;">Action</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(commande, index) in commandes" :key="index">
-              <td>{{ commande.numcommande }}</td>
+            <tr v-for="(commande, index) in comFiltres" :key="index">
+              <td>{{ commande.numcom }}</td>
               <td>{{ commande.nomfour }}</td>
-              <td>{{ commande.reference }}</td>
+              <td>{{ commande.refcom }}</td>
               <td>{{ commande.datecom }}</td>
+              <td>{{ commande.montantTcom }}</td>
+              <td>{{ commande.nomMag }}</td> 
               <td class="text-center">
                 <button @click="openAjoutModal" class="btn btn-sm text-success border-0 me-1" title="Nouveau">
                   <i class="bi bi-plus-circle"></i>
                 </button>
-                <button @click="openModifier" class="btn btn-sm text-warning border-0 me-1" title="Modifier">
+                <button @click="openModifier(commande)" class="btn btn-sm text-warning border-0 me-1" title="Modifier">
                   <i class="bi bi-pencil-square"></i>
                 </button>
-                <button class="btn btn-sm text-danger border-0" title="Supprimer">
+                <button @click="openDetail(commande)" class="btn btn-sm text-primary border-0 me-1" title="Détails">
+                  <i class="bi bi-eye"></i>
+                </button>
+                <button @click="deletecom(commande.numcom)" class="btn btn-sm text-danger border-0" title="Supprimer">
                   <i class="bi bi-trash"></i>
                 </button>
               </td>
             </tr>
+             <tr v-if="comFiltres.length === 0">
+              <td colspan="3" class="text-center text-muted">Aucune commande trouvée</td>
+            </tr>
           </tbody>
         </table>
       </div>
-      
+        <!-- total ligne -->
+         <div class="text-muted justify-content-right mt-3">Total commande : {{ comFiltres.length  }}</div>
       <!-- imprimer -->
-      <div class="text-end mt-3">
-        <button class="btn btn-secondary btn-sm">Imprimer</button>
-      </div>
+      
     </div>
 
     <!-- Modal d’AJOUT -->
@@ -142,7 +212,8 @@ const commandes = [
           <button class="btn-close" @click="closeDetail" aria-label="Fermer"></button>
         </div>
         <div class="modal-body">
-          <detailCom  @close="closeDetail" />
+          <detailCom v-if="shawDetail"
+            :numcom="commandeSelectionnee?.numcom" @fermer="closeDetail" />
         </div>
       </div>
     </div>
@@ -157,7 +228,7 @@ const commandes = [
           <button class="btn-close" @click="closeModifierModal" aria-label="Fermer"></button>
         </div>
         <div class="modal-body">
-          <UpdateCom  @close="closeModifierModal" />
+          <UpdateCom :comAEditer="comAEditer" @close="closeModifierModal" />
         </div>
       </div>
     </div>

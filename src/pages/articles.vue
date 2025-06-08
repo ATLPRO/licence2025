@@ -173,8 +173,6 @@ const articlesFiltres = computed(() => {
     <!-- Total  -->
     
       <div class="text-muted justify-content-right mt-3">Total d’articles : {{ articlesFiltres.length  }}</div>
-     
-  
   </div>
 
   <!-- Modal d’AJOUT -->

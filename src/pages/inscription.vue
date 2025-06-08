@@ -75,7 +75,7 @@ const router = useRouter()
             <label class="form-label">Rôle</label>
             <select v-model="role" class="form-select" required>
               <option value="comptable">Comptable</option>
-              <option value="directeur">Directeur</option>
+              <!-- <option value="directeur">Directeur</option> -->
             </select>
         </div>
         <button type="submit" class="btn btn-primary w-100">Créer un compte</button>

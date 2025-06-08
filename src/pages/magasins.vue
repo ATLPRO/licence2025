@@ -2,7 +2,7 @@
 import createMagasin from '@/components/magasin/createMagasin.vue';
 import updateMagasin from '@/components/magasin/updateMagasin.vue';
 
-import { ref, onMounted } from 'vue'
+import { ref, onMounted,computed } from 'vue'
 
 const magasins = ref([])
 const error = ref('')
@@ -47,7 +47,16 @@ async function deleteMagasin(codeMag) {
   }
 }
 
-
+// Filtrage des magasins selon le champ de recherche
+const recherche = ref('')
+const magasinFiltres = computed(() => {
+  const texte = recherche.value.toLowerCase().trim()
+  if (!texte) return magasins.value
+  return magasins.value.filter(magasins =>
+    magasins.codeMag.toLowerCase().includes(texte) ||
+    magasins.nomMag.toLowerCase().includes(texte)
+  )
+})
 
 </script>
 
@@ -72,7 +81,7 @@ async function deleteMagasin(codeMag) {
         <button @click="deleteMagasin(mag.codeMag)" class="btn btn-secondary btn-sm">Supprimer</button> -->
       </div>
       <div class="input-group" style="max-width: 200px;">
-        <input type="text" class="form-control form-control-sm" placeholder="Rechercher...">
+        <input v-model="recherche" type="text" class="form-control form-control-sm" placeholder="Rechercher...">
         <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-search"></i></button>
       </div>
     </div>
@@ -92,7 +101,7 @@ async function deleteMagasin(codeMag) {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="mag in magasins" :key="mag.codeMag">
+          <tr v-for="mag in magasinFiltres" :key="mag.codeMag">
           <td>{{ mag.codeMag }}</td>
           <td>{{ mag.nomMag }}</td>
           <td>{{ mag.adresseMag }}</td>
@@ -109,11 +118,16 @@ async function deleteMagasin(codeMag) {
               </button>
             </td>
           </tr>
+          <tr v-if="magasinFiltres.length === 0">
+          <td colspan="3" class="text-center text-muted">Aucun magasin trouvé</td>
+        </tr>
         </tbody>
       </table>
       <div v-else class="alert alert-info">Aucun magasin trouvé.</div>
     </div>
-
+    <!-- Total  -->
+    
+      <div class="text-muted justify-content-right mt-3">Total magasins : {{ magasinFiltres.length  }}</div>
   </div>
 
    <!-- Modal d’ajout -->

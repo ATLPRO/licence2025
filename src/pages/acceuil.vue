@@ -105,7 +105,9 @@ const alertes = [
 
 onMounted(() => {
   // Initialisation des graphiques Chart.js à faire ici si besoin
+  
 })
+
 </script>
 
 <style scoped>

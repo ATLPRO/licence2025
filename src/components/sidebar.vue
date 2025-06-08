@@ -27,7 +27,7 @@ const menusComptable = [
 ]
 
 onMounted(() => {
-  const userData = JSON.parse(localStorage.getItem('users') || '{}')
+  const userData = JSON.parse(localStorage.getItem('utilisateurConnecte') || '{}')
   role.value = userData.role || ''
   if (role.value === 'directeur') {
     items.value = menusDirecteur

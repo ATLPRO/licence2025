@@ -9,7 +9,7 @@ import Acceuil from '@/pages/acceuil.vue'
 import Articles from '@/pages/articles.vue'
 import Magasin from '@/pages/magasins.vue'
 import Fournisseurs from '@/pages/fournisseurs.vue'
-import Commande from '@/pages/commandes.vue'
+import Commandes from '@/pages/commandes.vue'
 import Production from '@/pages/production.vue'
 import Personnel from '@/pages/personnels.vue'
 
@@ -23,12 +23,17 @@ const routes = [
   { path: '/articles', component: Articles },
   { path: '/magasin', component: Magasin },
   { path: '/fournisseurs', component: Fournisseurs },
-  { path: '/commande', component: Commande },
+  { path: '/commande', component: Commandes },
   { path: '/production', component: Production },
   { path: '/personnel', component: Personnel },
   { path: '/createArticle', component: () => import('@/components/articles/createArticle.vue'), name: 'createArticle' },
-  { path: '/createMagasin', component: () => import('@/components/magasin/createMagasin.vue'), name: 'createMagasin' }
-  
+  { path: '/createMagasin', component: () => import('@/components/magasin/createMagasin.vue'), name: 'createMagasin' },
+  {
+  path: '/commandes',
+  name: 'Commandes',
+  component: () => import('@/pages/commandes.vue') // ou le bon chemin
+}
+
 ]
 
 const router = createRouter({

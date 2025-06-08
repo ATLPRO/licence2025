@@ -21,10 +21,12 @@ const login = async () => {
   }
   else{
     // Récupère le premier (et unique) utilisateur retourné par l'API
-  const utilisateur = responseData.value[0]
+  //const utilisateur = responseData.value
 
   // Stocke-le proprement dans localStorage
-  localStorage.setItem('utilisateurConnecte', JSON.stringify(utilisateur));
+  //localStorage.setItem('utilisateurConnecte', JSON.stringify(utilisateur));
+  localStorage.setItem('utilisateurConnecte', JSON.stringify(responseData.value));
+
     //console.log("Rôle :", responseData.value.role)
 
     localStorage.setItem('auth', 'true')

@@ -79,7 +79,9 @@ function mettreAJourPrix(ligne){
     ligne.prixUnitaire = articleChoisie.PuU
     ligne.grammage = articleChoisie.intituleU
     ligne.idu=articleChoisie.idU
+    ligne.idArt=articleChoisie.idArt
     console.log("idunite",ligne.idu)
+    console.log("article",ligne.idArt)
   } else {
     ligne.quantite = 0
     ligne.prixUnitaire = 0
@@ -94,11 +96,12 @@ const totalLigne = (ligne) => ligne.quantite * ligne.prixUnitaire
 const totalCommande = computed(() =>
   commande.lignes.reduce((total, ligne) => total + totalLigne(ligne), 0)
 )
-const utilisateur = JSON.parse(localStorage.getItem('users'));
+const utilisateur = JSON.parse(localStorage.getItem('utilisateurConnecte')); // le même nom que celui utilisé dans la connexion
+
 console.log("Utilisateur connecté :", utilisateur)
 
-const personnel = ref(utilisateur ? utilisateur.id : '');  // idpers
-const personnelNom = ref(utilisateur ? utilisateur.nom : ''); // nom
+const personnel = ref(utilisateur ? utilisateur.idpers : '');  // idpers
+const personnelNom = ref(utilisateur ? utilisateur.nompers : ''); // nom
 const envoyerCommande = async () => {
    if (!commande.numero || !commande.date || !commande.fournisseurId || commande.lignes.length === 0 ) {
     alert("Veuillez remplir tous les champs obligatoires et ajouter au moins un article.");
@@ -110,14 +113,15 @@ const envoyerCommande = async () => {
     refcom: reference.value,
     datecom: commande.date,
     montantTcom: totalCommande.value,
-    id: personnel.value,     // à remplir dynamiquement selon l'utilisateur connecté
+    idpers: personnel.value,     // à remplir dynamiquement selon l'utilisateur connecté
     idfour: commande.fournisseurId,
     idmag: magasins.value,
     lignes: commande.lignes.map(ligne => ({
       idArt: ligne.articleId,
+      idU: ligne.idu,
       qteC: ligne.quantite,
-      puC: ligne.prixUnitaire,
-      idU: ligne.idu
+      puC: ligne.prixUnitaire
+      
     }))
   };
 
