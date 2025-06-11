@@ -11,7 +11,7 @@ const menusDirecteur = [
   { path: '/articles', label: 'Articles', icon: 'bi-box' },
   { path: '/magasin', label: 'Magasin', icon: 'bi-building' },
   { path: '/fournisseurs', label: 'Fournisseurs', icon: 'bi-truck' },
-  { path: '/commande', label: 'Commande', icon: 'bi-cart' },
+  { path: '/commande', label: 'Achats', icon: 'bi-cart' },
   { path: '/production', label: 'Production', icon: 'bi-gear' },
   { path: '/personnel', label: 'Personnel', icon: 'bi-people' },
 ]
@@ -22,7 +22,7 @@ const menusComptable = [
   { path: '/magasin', label: 'Magasin', icon: 'bi-shop' },
   // Pas de Personnel ici
   { path: '/fournisseurs', label: 'Fournisseurs', icon: 'bi-truck' },
-  { path: '/commande', label: 'Commandes', icon: 'bi-basket' },
+  { path: '/commande', label: 'Achats', icon: 'bi-basket' },
   { path: '/production', label: 'Production', icon: 'bi-gear' },
 ]
 

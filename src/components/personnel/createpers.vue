@@ -13,7 +13,7 @@ const sexepers = ref('')
 const statutpers = ref('')
 const idfonc = ref('')
 const idserv = ref('')
-const id=ref('')
+//const id=ref('')
 const message = ref('')
 
 const fonction = ref([])
@@ -23,7 +23,7 @@ const users = ref([])
 onMounted(() => {
   chargerFonction()
   chargerService()
-  chargerusers()
+  genererMatPers()
 })
 
 //charger les fonction 
@@ -48,15 +48,14 @@ async function chargerService() {
     console.error(err)
   }
 }
-async function chargerusers() {
+//genere le nemero de commande automatiquement
+async function genererMatPers() {
   try {
-    const res = await fetch('http://localhost/apiLicence2025/controller/users/readusers.php?host=localhost&dbname=licence2025&username=root&password=')
-    if (!res.ok) throw new Error("Erreur serveur")
-    users.value = await res.json()
-  console.log("users",users.value)
+    const res = await fetch('http://localhost/apiLicence2025/controller/personnel/genererMatPers.php?host=localhost&dbname=licence2025&username=root&password=');
+    const data = await res.json();
+    matriculePers.value = data.matriculePers;
   } catch (err) {
-    message.value = "Impossible de charger les users"
-    console.error(err)
+    console.error('Erreur lors de la génération du numéro :', err);
   }
 }
 const ajouterPersonnel = async () => {
@@ -73,7 +72,7 @@ const ajouterPersonnel = async () => {
     statutpers: statutpers.value,
     idfonc: idfonc.value,
     idserv: idserv.value,
-    id: id.value
+    //id: id.value
   }
 
   try {
@@ -82,9 +81,10 @@ const ajouterPersonnel = async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     })
-
+    
     const result = await res.json()
-    message.value = result.message || 'Personnel ajouté'
+    //message.value = result.message || 'Personnel ajouté'
+    alert('✅ ' + result.message);
     resetForm()
   } catch (err) {
     message.value = 'Erreur lors de l’enregistrement'
@@ -117,7 +117,7 @@ const resetForm = () => {
           <div class="row g-3">
             <div class="col-md-4">
               <label class="form-label">Matricule*</label>
-              <input v-model="matriculePers" class="form-control" required />
+              <input v-model="matriculePers" class="form-control" required disabled/>
             </div>
             <div class="col-md-4">
               <label class="form-label">Nom*</label>
@@ -155,11 +155,11 @@ const resetForm = () => {
                 <option value="F">Féminin</option>
               </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
               <label class="form-label">Statut</label>
               <input v-model="statutpers" class="form-control" />
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
               <label class="form-label">Fonction</label>
               <select v-model="idfonc" class="form-select" required>
                 <option value="">-- Sélectionner une fonction --</option>
@@ -168,21 +168,12 @@ const resetForm = () => {
                 </option>
               </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
               <label class="form-label">Service</label>
               <select v-model="idserv" class="form-select" required>
                 <option value="">-- Sélectionner un service --</option>
                 <option v-for="s in service" :key="s.idserv" :value="s.idserv">
                   {{ s.intituleServ }}
-                </option>
-              </select>
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Utilisateur?</label>
-              <select v-model="id" class="form-select" >
-                <option  value="">-- Sélectionner un utilisateur --</option>
-                <option v-for="u in users" :key="u.id" :value="u.id">
-                  {{ u.nom }}
                 </option>
               </select>
             </div>

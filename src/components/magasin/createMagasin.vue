@@ -1,30 +1,45 @@
 <script setup>
-import { ref } from 'vue'
+import { ref,onMounted ,reactive} from 'vue'
 import { useRouter } from 'vue-router'
 
-
+const magasin=ref([])
 const nom = ref('')
 const telephone = ref('')
 const adresse = ref('')
-const type = ref('') 
+//const type = ref('') 
 const code=ref('')
 const error = ref('')
 const success = ref('')
 const router = useRouter()
-
+const magasins = reactive({
+  code: '',
+})
+//genere le nemero de commande automatiquement
+async function genererNumeroMagasin() {
+  try {
+    const res = await fetch('http://localhost/apiLicence2025/controller/magasin/genererNumeroMag.php?host=localhost&dbname=licence2025&username=root&password=');
+    const data = await res.json();
+   magasins.code = data.codeMag;
+  } catch (err) {
+    console.error('Erreur lors de la génération du numéro :', err);
+  }
+}
+onMounted(() => {
+  genererNumeroMagasin()
+})
  async function handleSubmit() {
   error.value = ''
   success.value = ''
-  if (!nom.value || !code.value || !type.value || !telephone.value || !adresse.value) {
+  if (!nom.value || !telephone.value || !adresse.value) {
     error.value = "Tous les champs sont requis."
     return
   }
   const payload = {
-    codeMag:code.value,
+    codeMag:magasins.code,
     nomMag: nom.value,
     adresseMag: adresse.value,
     telMag: telephone.value,
-    typeMag: type.value,
+    // typeMag: type.value,
   }
   try {
     const res = await fetch('http://localhost/apiLicence2025/controller/magasin/createmagasin.php?host=localhost&dbname=licence2025&username=root&password=', {
@@ -37,7 +52,7 @@ const router = useRouter()
     const data = await res.json()
 
     if (res.ok) {
-      success.value = data.message || "Magasin crée avec succès."
+      alert('✅ ' + data.message);
       // Petite pause avant redirection
       setTimeout(() => {
         router.push('/magasin')
@@ -60,7 +75,7 @@ const router = useRouter()
           <div class="row g-3">
             <div class="col-md-6">
               <label for="nom" class="form-label">Codes*</label>
-              <input v-model="code" type="text" class="form-control" id="nom" required />
+              <input v-model="magasins.code" type="text" class="form-control" id="nom" required disabled />
             </div>
             <div class="col-md-6">
               <label for="adresse" class="form-label">Nom*</label>
@@ -75,14 +90,6 @@ const router = useRouter()
               <label for="adresse" class="form-label">Adresse*</label>
               <input v-model="adresse" type="text" class="form-control" id="adresse" required />
             </div>
-            <div class="col-md-6">
-            <label for="type" class="form-label">Type*</label>
-                <select v-model="type" class="form-select" required>
-              <option value="produit fini">Produit fini</option>
-              <option value="matiere premiere">Matiere premiere</option>
-              <option value="divers">Divers</option>
-                </select>
-              </div>
                     <!-- Afficher l'erreur ou le succes selon le cas -->
       <div v-if="error" class="alert alert-danger">{{ error }}</div>
       <div v-if="success" class="alert alert-success">{{ success }}</div>

@@ -1,5 +1,5 @@
 <script setup>
-import {ref} from 'vue'
+import {ref,onMounted,reactive} from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -15,17 +15,32 @@ const soldeinitfour=ref('')
 const soldefour=ref('')
 const error = ref('')
 const success = ref('')
-
+const fournisseur = reactive({
+  codefour: '',
+})
+//genere le nemero de commande automatiquement
+async function genererNumeroFour() {
+  try {
+    const res = await fetch('http://localhost/apiLicence2025/controller/fournisseur/genererNumeroFour.php?host=localhost&dbname=licence2025&username=root&password=');
+    const data = await res.json();
+    fournisseur.codefour = data.codefour;
+  } catch (err) {
+    console.error('Erreur lors de la génération du numéro :', err);
+  }
+}
+onMounted(() => {
+  genererNumeroFour()
+})
 //enregistrer le fournisseur
 async function handleSubmit() {
   error.value = ''
   success.value = ''
-  if (!nomfour.value || !codefour.value || !tel1four.value || !tel2four.value || !adressefour.value || !soldefour.value || !soldeinitfour.value) {
+  if (!nomfour.value || !tel1four.value || !tel2four.value || !adressefour.value || !soldefour.value || !soldeinitfour.value) {
     error.value = "Tous les champs sont requis."
     return
   }
   const payload = {
-    codefour:codefour.value,
+    codefour:fournisseur.codefour,
     nomfour: nomfour.value,
     prenomfour: prenomfour.value,
     tel1four: tel1four.value,
@@ -46,7 +61,7 @@ async function handleSubmit() {
     const data = await res.json()
 
     if (res.ok) {
-      success.value = data.message || "Fournisseur crée avec succès."
+      alert('✅ ' + data.message);
       // Petite pause avant redirection
       setTimeout(() => {
         router.push('/fournisseurs')
@@ -70,7 +85,7 @@ async function handleSubmit() {
           <div class="row g-3">
             <div class="col-md-4">
               <label class="form-label">Code Fournisseur *</label>
-              <input v-model="codefour" type="text" class="form-control" required />
+              <input v-model="fournisseur.codefour" type="text" class="form-control" required disabled/>
             </div>
             <div class="col-md-4">
               <label class="form-label">Nom *</label>
@@ -82,11 +97,11 @@ async function handleSubmit() {
             </div>
             <div class="col-md-4">
               <label class="form-label">Téléphone 1*</label>
-              <input v-model="tel1four" type="tel" class="form-control" required/>
+              <input v-model="tel1four" type="number" class="form-control" required/>
             </div>
             <div class="col-md-4">
               <label class="form-label">Téléphone 2</label>
-              <input v-model="tel2four" type="tel" class="form-control" />
+              <input v-model="tel2four" type="number" class="form-control" />
             </div>
             <div class="col-md-4">
               <label class="form-label">Adresse *</label>

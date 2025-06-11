@@ -44,6 +44,7 @@ async function chargerUnites() {
 onMounted(() => {
   chargerFamilles()
   chargerUnites()
+  genererReferenceArt()
   //console.log("article",idFamille)
 })
 function renseignerConditionnement() {
@@ -54,6 +55,16 @@ function renseignerConditionnement() {
   } else {
     qteA.value = 0
     puA.value = 0
+  }
+}
+//genere le nemero de commande automatiquement
+async function genererReferenceArt() {
+  try {
+    const res = await fetch('http://localhost/apiLicence2025/controller/article/genererRefArt.php?host=localhost&dbname=licence2025&username=root&password=');
+    const data = await res.json();
+    reference.value = data.refArt;
+  } catch (err) {
+    console.error('Erreur lors de la génération du numéro :', err);
   }
 }
 //ajout dans article
@@ -102,7 +113,7 @@ async function enregistrerArticle() {
     })
      const dataAvoir = await resAvoir.json()
       if (resAvoir.ok) {
-        success.value = "Article enregistré avec succès."
+        alert('✅ Article enregistrer avec succes');
         setTimeout(() => {
           router.push('/articles')
         }, 1500)
@@ -140,7 +151,7 @@ async function enregistrerArticle() {
             <div class="row g-3">
               <div class="col-md-4">
                 <label for="reference" class="form-label">Référence*</label>
-                <input v-model="reference" type="text" class="form-control" id="reference" required />
+                <input v-model="reference" type="text" class="form-control" id="reference" disabled required />
               </div>
               <div class="col-md-4">
                 <label for="designation" class="form-label">Désignation*</label>

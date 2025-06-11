@@ -120,7 +120,7 @@ const comFiltres = computed(() => {
     <div class="container-fluid py-3">
       <!-- Titre et bouton Actualiser -->
       <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-        <h4 class="text-primary">Gestion des commandes</h4>
+        <h4 class="text-primary">Gestion des achats</h4>
         <router-link to="/acceuil">  <button class="btn btn-danger">
         <i class="bi bi-box-arrow-left me-1"></i> Quitter
       </button>
@@ -161,9 +161,6 @@ const comFiltres = computed(() => {
               <td>{{ commande.montantTcom }}</td>
               <td>{{ commande.nomMag }}</td> 
               <td class="text-center">
-                <button @click="openAjoutModal" class="btn btn-sm text-success border-0 me-1" title="Nouveau">
-                  <i class="bi bi-plus-circle"></i>
-                </button>
                 <button @click="openModifier(commande)" class="btn btn-sm text-warning border-0 me-1" title="Modifier">
                   <i class="bi bi-pencil-square"></i>
                 </button>

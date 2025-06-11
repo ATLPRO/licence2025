@@ -67,7 +67,7 @@ function imprimer() {
 
 <template>
   <div v-if="commande" class="container mt-4">
-    <h4 class="mb-4 text-primary">Détail de la commande</h4>
+    <h4 class="mb-4 text-primary">Détail des achats</h4>
 
     <div class="row mb-3">
       <div class="col-md-3"><strong>Numéro :</strong> {{ commande.numcom }}</div>

@@ -32,10 +32,7 @@
       <!-- Boutons et recherche -->
       <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <div class="btn-group">
-          <button class="btn btn-secondary btn-sm">Détail</button>
           <button class="btn btn-secondary btn-sm">Nouveau</button>
-          <button class="btn btn-secondary btn-sm">Modifier</button>
-          <button class="btn btn-secondary btn-sm">Supprimer</button>
          
         </div>
         <div class="input-group" style="max-width: 200px;">
@@ -63,9 +60,6 @@
               <td>{{ pro.datepro }}</td>
               <td>{{ pro.couttotal }} FCFA</td>
               <td class="text-center">
-                <button class="btn btn-sm text-success border-0 me-1" title="Nouveau">
-                  <i class="bi bi-plus-circle"></i>
-                </button>
                 <button class="btn btn-sm text-warning border-0 me-1" title="Modifier">
                   <i class="bi bi-pencil-square"></i>
                 </button>

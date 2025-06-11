@@ -41,10 +41,21 @@ async function chargerMagasin() {
     console.error(err)
   }
 }
+//genere le nemero de commande automatiquement
+async function genererNumeroCommande() {
+  try {
+    const res = await fetch('http://localhost/apiLicence2025/controller/commande/genererNumeroCom.php?host=localhost&dbname=licence2025&username=root&password=');
+    const data = await res.json();
+    commande.numero = data.numcom;
+  } catch (err) {
+    console.error('Erreur lors de la génération du numéro :', err);
+  }
+}
 onMounted(() => {
   chargeFournisseur();
   chargearticle()
   chargerMagasin()
+  genererNumeroCommande()
 })
 
 const commande = reactive({
@@ -75,8 +86,8 @@ function mettreAJourPrix(ligne){
   
    const articleChoisie = uniteA.value.find(u => u.idArt == ligne.articleId)
   if (articleChoisie) {
-    ligne.quantite = articleChoisie.QteU
-    ligne.prixUnitaire = articleChoisie.PuU
+    ligne.quantite = articleChoisie.qteA
+    ligne.prixUnitaire = articleChoisie.puA
     ligne.grammage = articleChoisie.intituleU
     ligne.idu=articleChoisie.idU
     ligne.idArt=articleChoisie.idArt
@@ -126,7 +137,7 @@ const envoyerCommande = async () => {
   };
 
   try {
-    const res = await fetch('http://localhost/apiLicence2025/controller/commande/validerCommande.php?host=localhost&dbname=licence2025&username=root&password=', {
+    const res = await fetch('http://localhost/apiLicence2025/controller/commande/validerCommandes.php?host=localhost&dbname=licence2025&username=root&password=', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -157,13 +168,13 @@ const envoyerCommande = async () => {
 
 <template>
   <div class="container mt-4">
-    <h4 class="mb-4 text-primary">Nouvelle commande</h4>
+    <h4 class="mb-4 text-primary">Nouveau Achat</h4>
 
     <!-- En-tête -->
     <div class="row mb-3">
       <div class="col-md-4">
-        <label class="form-label">Numéro de commande *</label>
-        <input v-model="commande.numero" type="text" class="form-control" required />
+        <label class="form-label">Numéro d'achat *</label>
+        <input v-model="commande.numero" type="text" class="form-control" required readonly disabled/>
       </div>
       <div class="col-md-4">
         <label class="form-label">Date *</label>
@@ -232,11 +243,11 @@ const envoyerCommande = async () => {
       <button class="btn btn-outline-primary" @click="ajouterLigne">
         <i class="bi bi-plus-circle"></i> Ajouter un article
       </button>
-      <h5 class="text-end">Total commande : {{ totalCommande }} FCFA</h5>
+      <h5 class="text-end">Total Achat : {{ totalCommande }} FCFA</h5>
     </div>
 
     <div class="mt-4 text-end">
-      <button class="btn btn-success" @click="envoyerCommande">Valider la commande</button>
+      <button class="btn btn-success" @click="envoyerCommande">Valider l'achat</button>
     </div>
   </div>
 </template>

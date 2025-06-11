@@ -204,7 +204,7 @@ const updatePrix = (ligne) => {
 
 <template>
   <div  class="container mt-4">
-    <h4 class="text-primary mb-4">Modifier la commande</h4>
+    <h4 class="text-primary mb-4">Modifier l'achat</h4>
 
     <!-- En-tête -->
     <div class="row g-3 mb-3">

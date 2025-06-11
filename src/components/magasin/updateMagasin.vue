@@ -8,7 +8,7 @@ const props = defineProps({
 const nom = ref('')
 const adresse = ref('')
 const telephone = ref('')
-const type = ref('')
+//const type = ref('')
 const error = ref('')
 const success = ref('')
 
@@ -23,7 +23,7 @@ async function chargerMagasin(code) {
       nom.value = data.nomMag
       adresse.value = data.adresseMag
       telephone.value = data.telMag
-      type.value = data.typeMag
+      //type.value = data.typeMag
     } else {
       error.value = "Erreur de chargement du magasin"
     }
@@ -47,7 +47,7 @@ const handleSubmit = async () => {
       nomMag: nom.value,
       adresseMag: adresse.value,
       telMag: telephone.value,
-      typeMag: type.value
+      //typeMag: type.value
     }
     const res = await fetch(`http://localhost/apiLicence2025/controller/magasin/updateMagasin.php?host=localhost&dbname=licence2025&username=root&password=`, {
       method: 'POST',
@@ -93,14 +93,6 @@ const handleSubmit = async () => {
             <div class="col-md-6">
               <label class="form-label">Adresse*</label>
               <input v-model="adresse" type="text" class="form-control" required />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Type*</label>
-              <select v-model="type" class="form-select" required>
-                <option value="produit fini">Produit fini</option>
-                <option value="matiere premiere">Matière première</option>
-                <option value="divers">Divers</option>
-              </select>
             </div>
             <div v-if="error" class="alert alert-danger">{{ error }}</div>
             <div v-if="success" class="alert alert-success">{{ success }}</div>

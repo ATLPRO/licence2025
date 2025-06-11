@@ -54,7 +54,7 @@ const login = async () => {
       <input v-model="passwords" class="form-control mb-3" placeholder="Mot de passe" type="password" />
       <button type="submit" class="btn btn-primary w-100">Se connecter</button>
       <div class="mt-3 text-center">
-        <router-link to="/inscription">Créer un compte</router-link> |
+        <!-- <router-link to="/inscription">Créer un compte</router-link> | -->
         <router-link to="/reinitialiser">Mot de passe oublié ?</router-link>
       </div>
     </form>

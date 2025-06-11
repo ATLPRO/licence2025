@@ -135,9 +135,6 @@ const fourFiltres = computed(() => {
               <td>{{ fournisseur.soldefour }} </td>
               <td>{{ fournisseur.soldeinitfour }} </td>
               <td class="text-center">
-                <button @click="openAjoutModal" class="btn btn-sm text-success border-0 me-1" title="Nouveau">
-                  <i class="bi bi-plus-circle"></i>
-                </button>
                 <button @click="openModifierModal(fournisseur)" class="btn btn-sm text-warning border-0 me-1" title="Modifier">
                   <i class="bi bi-pencil-square"></i>
                 </button>

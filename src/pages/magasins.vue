@@ -96,7 +96,7 @@ const magasinFiltres = computed(() => {
             <th style="min-width: 130px;">Nom</th>
             <th style="min-width: 130px;">Adresse</th>
             <th style="min-width: 130px;">Téléphone</th>
-            <th style="min-width: 130px;">Type</th>
+            <!-- <th style="min-width: 130px;">Type</th> -->
             <th style="min-width: 130px;" class="text-center">Action</th>
           </tr>
         </thead>
@@ -106,10 +106,8 @@ const magasinFiltres = computed(() => {
           <td>{{ mag.nomMag }}</td>
           <td>{{ mag.adresseMag }}</td>
           <td>{{ mag.telMag }}</td>
-          <td>{{ mag.typeMag }}</td>
+          <!-- <td>{{ mag.typeMag }}</td> -->
             <td class="text-center">
-              <i class="bi bi-plus-circle text-success border-0 me-3" role="button" title="Nouveau"
-              data-bs-toggle="modal" data-bs-target="#modalAjout"></i>
               <button @click="editMagasin(mag)" class="btn btn-sm text-warning border-0 me-1" title="Modifier">
                 <i class="bi bi-pencil-square" data-bs-toggle="modal" data-bs-target="#modalModifier"></i>
               </button>

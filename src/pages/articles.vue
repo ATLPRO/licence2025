@@ -4,13 +4,16 @@ import createArticle from '@/components/articles/createArticle.vue'
 import updateArticle from '@/components/articles/updateArticle.vue'
 import familleArticle from '@/components/articles/familleArticle.vue'
 import uniteArticle from '@/components/articles/uniteArticle.vue'
-//import FamilleArticle from '@/components/articles/familleArticle.vue'
+import detailArticle from '@/components/articles/detailArticle.vue'
+import nommenclature from '@/components/articles/nommenclature.vue'
 
 //gerer les ouvertures et fermeture des modal avec vuejs
 const showAjout = ref(false)
 const showModifier = ref(false)
 const showFamille=ref(false)
 const showUnite=ref(false)
+const shawDetail=ref(false)
+const shawNommer=ref(false)
 //ouvrir nouveaue 
 const openAjoutModal = () => {
   showAjout.value = true
@@ -45,6 +48,39 @@ const openUnite  = () => {
 const closeUnite = () => {
   showUnite.value = false
 }
+//Les details sur larticle produit fini
+const articleSelectionnee = ref(null)
+function openDetail(article) {
+  if (article.typeArt !== 'produit fini') {
+    alert("Veuillez sélectionner un article de type 'produit fini' pour voir les détails.");
+    return;
+  }
+  articleSelectionnee.value = article
+  shawDetail.value = true
+}
+
+const closeDetail = () => {
+  shawDetail.value = false
+  //codefour.value = null
+}
+//ouvrir une nommenclature
+const openNommer = (article) => {
+  if (article.typeArt !== 'produit fini') {
+    alert("Veuillez sélectionner un article de type 'produit fini' pour gérer sa nomenclature.");
+    return;
+  }
+  articleSelectionnee.value = article
+  shawNommer.value=true
+  
+  // Naviguer vers une page de nomenclature ou ouvrir une modale
+  console.log("Définir nomenclature pour l'article :", article)
+  // Exemple : router.push(`/articles/${article.idArt}/nomenclature`)
+}
+const closeNommer = () => {
+  shawNommer.value = false
+  //codefour.value = null
+}
+
 const error = ref('')
 const article=ref([])
 //afficher les articles
@@ -112,8 +148,7 @@ const articlesFiltres = computed(() => {
         <button class="btn " @click="openAjoutModal">Nouveau</button>
         <button class="btn "  @click="openFamille">Famille</button>
         <button class="btn " @click="openUnite">Unité</button>
-        <button class="btn ">Détail</button>
-        <button class="btn ">Nommer</button>
+        
       </div>
       <div  class="input-group" style="max-width: 200px;">
         <input v-model="recherche" type="text" class="form-control form-control-sm" placeholder="Rechercher un artic...">
@@ -127,7 +162,6 @@ const articlesFiltres = computed(() => {
       <table class="table table-bordered table-hover table-striped align-middle">
         <thead class="table-primary">
           <tr>
-            <th style="min-width: 130px;" class="text-center">Action</th>
             <th>Référence</th>
             <th>Désignation</th>
             <th>Qté Unitaire</th>
@@ -137,22 +171,12 @@ const articlesFiltres = computed(() => {
             <th>Type</th>
             <th>Famille</th>
             <th>Stock initial</th>
+            <th style="min-width: 130px;" class="text-center">Action</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="(article, index) in articlesFiltres" :key="index">
-            <td class="text-center">
-              <button @click="openAjoutModal" class="btn btn-sm text-success border-0 me-1" title="Nouveau">
-                  <i class="bi bi-plus-circle"></i>
-                </button>
-                <button @click="openModifierModal(article)" class="btn btn-sm text-warning border-0 me-1" title="Modifier">
-                  <i class="bi bi-pencil-square"></i>
-                </button>
-                <button @click="deleteArt(article.refArt)" class="btn btn-sm text-danger border-0" title="Supprimer">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </td>
-
+          
             <td>{{ article.refArt }}</td>
             <td>{{ article.desArt }}</td>
             <td>{{ article.QteUArt }}</td>
@@ -162,6 +186,21 @@ const articlesFiltres = computed(() => {
             <td>{{ article.typeArt }}</td>
             <td>{{ article.intituleFam }}</td>
             <td>{{ article.stockMin}}</td>
+            <td class="text-center">
+                <button @click="openModifierModal(article)" class="btn btn-sm text-warning border-0 me-1" title="Modifier">
+                  <i class="bi bi-pencil-square"></i>
+                </button>
+                 <button @click="openDetail(article)" class="btn btn-sm text-primary border-0 me-1" title="Détails">
+                  <i class="bi bi-eye"></i>
+                </button>
+                 <button @click="openNommer(article)" class="btn btn-sm text-success border-0 me-1" title="Définir la nomenclature">
+                  <i class="bi bi-diagram-3-fill"></i>
+                </button>
+
+                <button @click="deleteArt(article.refArt)" class="btn btn-sm text-danger border-0" title="Supprimer">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
           </tr>
           <tr v-if="articlesFiltres.length === 0">
           <td colspan="3" class="text-center text-muted">Aucun article trouvé</td>
@@ -202,6 +241,38 @@ const articlesFiltres = computed(() => {
         </div>
         <div class="modal-body">
           <updateArticle :article="articleAEditer" @close="closeModifierModal" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Modal de detail -->
+ <div v-if="shawDetail" class="modal-backdrop fade show"></div>
+  <div v-if="shawDetail" class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Detail sur l'article</h5>
+          <button class="btn-close" @click="closeDetail" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <detailArticle v-if="shawDetail"
+            :refArt="articleSelectionnee?.refArt" @fermer="closeDetail" />
+        </div>
+      </div>
+    </div>
+  </div>
+   <!-- Modal de nommenclature -->
+ <div v-if="shawNommer" class="modal-backdrop fade show"></div>
+  <div v-if="shawNommer" class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Nommenclature</h5>
+          <button class="btn-close" @click="closeNommer" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <nommenclature v-if="shawNommer"
+            :refArt="articleSelectionnee?.refArt" @fermer="closeNommer" />
         </div>
       </div>
     </div>

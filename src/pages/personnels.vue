@@ -143,12 +143,13 @@ async function deletepers(matriculePers) {
               <td>{{ personnel.datevalidite }}</td>
               <td>{{ personnel.statutpers }} </td>
               <td class="text-center">
-                <button @click="openAjoutModal" class="btn btn-sm text-success border-0 me-1" title="Nouveau">
-                  <i class="bi bi-plus-circle"></i>
-                </button>
                 <button @click="openModifierModal(personnel)" class="btn btn-sm text-warning border-0 me-1" title="Modifier">
                   <i class="bi bi-pencil-square"></i>
                 </button>
+             <router-link to="/inscription" class="btn btn-sm btn-outline-warning me-1 d-inline-flex align-items-center" title="S’inscrire en tant qu'utilisateur">
+                <i class="bi bi-person-plus-fill me-1"></i> 
+              </router-link>
+
                 <button @click="deletepers(personnel.matriculePers)" class="btn btn-sm text-danger border-0" title="Supprimer">
                   <i class="bi bi-trash"></i>
                 </button>
