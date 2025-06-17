@@ -96,7 +96,7 @@ onMounted(async () => {
 })
   //supprimer larticle
 async function deleteArt(refArt) {
-  if (!confirm("Confirmer la suppression de l'article?",article.refArt)) return;
+  if (!confirm("Confirmer la suppression de l'article? " + article.desArt)) return;
   try {
     const res = await fetch(`http://localhost/apiLicence2025/controller/article/supprimerVirtuellement.php?host=localhost&dbname=licence2025&username=root&password=`, {
       method: 'POST',
@@ -145,9 +145,9 @@ const articlesFiltres = computed(() => {
     <!-- Barre de recherche et boutons -->
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-5">
         <div class="btn-group autres ">
-        <button class="btn " @click="openAjoutModal">Nouveau</button>
-        <button class="btn "  @click="openFamille">Famille</button>
-        <button class="btn " @click="openUnite">Unité</button>
+        <button class="btn btn-primary " @click="openAjoutModal">Nouveau</button>
+        <button class="btn btn-primary"  @click="openFamille">Famille</button>
+        <button class="btn btn-primary" @click="openUnite">Unité</button>
         
       </div>
       <div  class="input-group" style="max-width: 200px;">
@@ -160,7 +160,7 @@ const articlesFiltres = computed(() => {
     <div v-if="error" class="alert alert-danger">{{ error }}</div>
     <div class="table-responsive">
       <table class="table table-bordered table-hover table-striped align-middle">
-        <thead class="table-primary">
+        <thead class="table-primary ">
           <tr>
             <th>Référence</th>
             <th>Désignation</th>
@@ -256,7 +256,9 @@ const articlesFiltres = computed(() => {
         </div>
         <div class="modal-body">
           <detailArticle v-if="shawDetail"
-            :refArt="articleSelectionnee?.refArt" @fermer="closeDetail" />
+            :refArt="articleSelectionnee?.refArt" 
+            :idArt="articleSelectionnee?.idArt"
+            @fermer="closeDetail" />
         </div>
       </div>
     </div>
@@ -310,7 +312,9 @@ const articlesFiltres = computed(() => {
   </div>
 </template>
 <style scoped>
-
+.table-primary {
+  background-color: var(--bs-primary);
+}
 .form-control{
     width: 100px;
 }

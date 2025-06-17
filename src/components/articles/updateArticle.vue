@@ -3,6 +3,7 @@
   import { useRouter } from 'vue-router'
   
  const famille=ref([])// Liste des familles récupérées depuis l’API
+ const unite=ref([])
   const reference=ref('')
   const designation=ref('')
   const type=ref('')
@@ -13,13 +14,19 @@
   const stockInitial=ref('')
   const error = ref('')
   const success = ref('')
-  const idFam = ref('')  // pour stocker l'ID sélectionné
-  
+  const idFam = ref('')
+  const idFamille = ref('') 
+    const idUnite = ref('')   // pour stocker l'ID sélectionné
+  const qteA=ref(0)
+  const puA=ref(0)
+
   const props = defineProps({
   article: Object
 })
+
 onMounted(async () => {
   await chargerFamilles() // attendre que le tableau soit prêt
+  await chargerUnites()
 })
 //charger les intitule de la famille dans le select famille
   async function chargerFamilles() {
@@ -32,7 +39,27 @@ onMounted(async () => {
     console.error(err)
   }
 }
-
+//charger les unites dans le select 
+async function chargerUnites() {
+  try {
+    const res = await fetch('http://localhost/apiLicence2025/controller/unite/readunite.php?host=localhost&dbname=licence2025&username=root&password=')
+    if (!res.ok) throw new Error("Erreur serveur")
+    unite.value = await res.json()
+  } catch (err) {
+    error.value = "Impossible de charger les unites d'articles"
+    console.error(err)
+  }
+}
+function renseignerConditionnement() {
+  const uniteChoisie = unite.value.find(u => u.idU == idUnite.value)
+  if (uniteChoisie) {
+    qteA.value = uniteChoisie.QteU
+    puA.value = uniteChoisie.PuU
+  } else {
+    qteA.value = 0
+    puA.value = 0
+  }
+}
 // Charger dès que la reference de l'article change
 watch(() => props.article, (a) => {
   if (a) {
@@ -141,7 +168,7 @@ async function handleSubmit() {
               <div class="col-md-4">
                 <label for="famille" class="form-label">Famille*</label>
                 <select v-model="idFam" class="form-select" required>
-                  <option value="">-- Sélectionner une famille --</option>
+                  <option value="" disabled>-- Sélectionner une famille --</option>
                   <option v-for="f in famille" :key="f.idFam" :value="f.idFam">
                      {{ f.intituleFam }}
                   </option>
@@ -154,7 +181,27 @@ async function handleSubmit() {
      
               </div>
             </div>
-  
+             <!-- === Partie 2 : Conditionnement === -->
+             <h5 class="text-success mt-4">Conditionnement</h5>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label for="unite" class="form-label">Unité*</label>
+              <select v-model="idUnite" @change="renseignerConditionnement" class="form-select" required>
+                <option value="" disabled>-- Sélectionner une unité --</option>
+                <option v-for="u in unite" :key="u.idU" :value="u.idU">
+                  {{ u.intituleU }}
+                </option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label for="qteA" class="form-label">Quantité </label>
+              <input v-model="qteA" type="number" min="0" class="form-control" id="qteA"  />
+            </div>
+            <div class="col-md-4">
+              <label for="puA" class="form-label">Prix unitaire (conditionné)</label>
+              <input v-model="puA" type="number" min="0" class="form-control" id="puA"  />
+            </div>
+          </div>
             <div class="mt-4 d-flex justify-content-between">
               <button type="submit" class="btn btn-success">
                 <i class="bi bi-check-circle me-1"></i> Modifier

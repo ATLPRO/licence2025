@@ -1,4 +1,60 @@
+<script setup>
+import { onMounted, ref } from 'vue'
+import createArticle from '@/components/articles/createArticle.vue'
+import createCom from '@/components/commande/createCom.vue'
+import createProd from '@/components/production/createProd.vue'
 
+// État des modals
+const showAjout = ref(false)
+const showArticle = ref(false)
+const showAjoutPro=ref(false)
+
+// Fonctions modals
+const openAjoutModal = () => {
+  showAjout.value = true
+}
+
+const closeAjoutModal = () => {
+  showAjout.value = false
+}
+// Fonctions modals
+const openAjoutArticle = () => {
+  showArticle.value = true
+}
+
+const closeAjoutArticle = () => {
+  showArticle.value = false
+}
+// Fonctions modals
+const openAjoutProd = () => {
+  showAjoutPro.value = true
+}
+
+const closeAjoutProduction = () => {
+  showAjoutPro.value = false
+}
+const stats = ref({
+  articles: 0,
+  fournisseurs: 0,
+  commandes: 0,
+  magasins: 0
+})
+
+async function chargerStats() {
+  const res = await fetch('http://localhost/apiLicence2025/controller/dashboard.php?host=localhost&dbname=licence2025&username=root&password=')
+  if (res.ok) {
+    stats.value = await res.json()
+  }
+}
+const cards = [
+  { key: 'articles', label: 'Articles', icon: 'bi bi-box-seam', color: 'bg-primary' },
+  { key: 'fournisseurs', label: 'Fournisseurs', icon: 'bi bi-truck', color: 'bg-success' },
+  { key: 'commandes', label: 'Achats', icon: 'bi bi-cart-check', color: 'bg-warning' },
+  { key: 'magasins', label: 'Magasins', icon: 'bi bi-building', color: 'bg-danger' }
+]
+onMounted(chargerStats);
+
+</script>
 
 <template>
   <div class="container-fluid py-4">
@@ -10,42 +66,14 @@
 
     <!-- Cartes statistiques -->
    
-  <div class="container py-2">
-    
+   <div class="container py-2">
     <div class="row g-2">
-      <div class="col-12 col-sm-3 col-lg-3">
-        <div class="card text-white bg-primary shadow ">
-          <div class=" card-body ">
-            <h5 class="card-title ">Articles</h5>
-            <p class="card-text fs-3">2</p>
-            <i class="bi bi-box-seam fs-1 "></i>
-          </div>
-        </div>
-      </div>
-      <div class="col-12 col-sm-3 col-lg-3">
-        <div class="card text-white bg-success shadow">
+      <div class="col-12 col-sm-3 col-lg-3" v-for="(valeur, label, index) in cards" :key="index">
+        <div :class="`card text-white shadow ${valeur.color}`">
           <div class="card-body">
-            <h5 class="card-title">Fournisseurs</h5>
-            <p class="card-text fs-3">2</p>
-            <i class="bi bi-truck fs-1"></i>
-          </div>
-        </div>
-      </div>
-      <div class="col-12 col-sm-3 col-lg-3">
-        <div class="card text-white bg-warning shadow">
-          <div class="card-body">
-            <h5 class="card-title">Commandes</h5>
-            <p class="card-text fs-3">2</p>
-            <i class="bi bi-cart-check fs-1"></i>
-          </div>
-        </div>
-      </div>
-      <div class="col-12 col-sm-3 col-lg-3">
-        <div class="card text-white bg-danger shadow">
-          <div class="card-body">
-            <h5 class="card-title">Magasins</h5>
-            <p class="card-text fs-3">2</p>
-            <i class="bi bi-building fs-1"></i>
+            <h5 class="card-title">{{ valeur.label }}</h5>
+            <p class="card-text fs-3">{{ stats[valeur.key] }}</p>
+            <i :class="`fs-1 ${valeur.icon}`"></i>
           </div>
         </div>
       </div>
@@ -53,24 +81,6 @@
   </div>
 
 
-    <!-- Graphiques -->
-    <!-- <div class="row mb-4">
-      <div class="col-md-6 mb-3">
-        <div class="card p-3 shadow-sm">
-          <h5 class="mb-3">Commandes par mois</h5> 
-           Graphique à intégrer ici 
-          <canvas id="commandeChart"></canvas>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card p-3 shadow-sm">
-          <h5 class="mb-3">Top 5 articles</h5>
-          Graphique à intégrer ici 
-          <canvas id="topArticlesChart"></canvas>
-        </div>
-      </div>
-    </div>
--->
     <!-- Alertes -->
     <div class="card p-3 shadow-sm mb-4">
       <h5 class="mb-3 text-danger">Alertes</h5>
@@ -81,34 +91,57 @@
 
     <!-- Liens rapides -->
     <div class="d-flex flex-wrap gap-2">
-      <button class="btn btn-outline-primary"><i class="bi bi-box"></i> Ajouter article</button>
-      <button class="btn btn-outline-success"><i class="bi bi-cart-plus"></i> Nouvelle commande</button>
-      <button class="btn btn-outline-warning"><i class="bi bi-person-plus"></i> Nouveau fournisseur</button>
+      <button class="btn btn-outline-primary " @click="openAjoutArticle"><i class="bi bi-box"></i> Ajouter article</button>
+      <button class="btn btn-outline-success" @click="openAjoutModal"><i class="bi bi-cart-plus"  ></i> Nouveau achat</button>
+      <button class="btn btn-outline-warning" @click="openAjoutProd"><i class="bi bi-person-plus"></i> Nouvelle production</button>
+    </div>
+  </div>
+   <!-- Modal d’AJOUT -->
+  <div v-if="showAjout" class="modal-backdrop fade show"></div>
+  <div v-if="showAjout" class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Ajouter un achat</h5>
+          <button class="btn-close" @click="closeAjoutModal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <createCom @close="closeAjoutModal" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Modal d’AJOUT -->
+  <div v-if="showArticle" class="modal-backdrop fade show"></div>
+  <div v-if="showArticle" class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Ajouter un Article</h5>
+          <button class="btn-close" @click="closeAjoutArticle" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <createArticle @close="closeAjoutArticle" />
+        </div>
+      </div>
+    </div>
+  </div>
+   <!-- Modal d’AJOUT -->
+  <div v-if="showAjoutPro" class="modal-backdrop fade show"></div>
+  <div v-if="showAjoutPro" class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Creer une production</h5>
+          <button class="btn-close" @click="closeAjoutProduction" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <createProd @close="closeAjoutProduction" />
+        </div>
+      </div>
     </div>
   </div>
 </template>
-
-<script setup>
-import { onMounted, ref } from 'vue'
-
-const statCards = [
-  { title: 'Articles en stock', value: 125, icon: 'bi bi-box-seam' },
-  { title: 'Fournisseurs', value: 18, icon: 'bi bi-truck' },
-  { title: 'Magasins', value: 5, icon: 'bi bi-shop' }
-]
-
-const alertes = [
-  'Article A1 en rupture',
-  'Commande C023 en attente',
-  'Stock critique pour Article B7'
-]
-
-onMounted(() => {
-  // Initialisation des graphiques Chart.js à faire ici si besoin
-  
-})
-
-</script>
 
 <style scoped>
 

@@ -19,6 +19,7 @@ const success = ref('')
   const idUnite = ref('')  // pour stocker l'ID sélectionné
   const qteA=ref(0)
   const puA=ref(0)
+
 //charger les intitule de la famille dans le select famille
   async function chargerFamilles() {
   try {
@@ -185,7 +186,7 @@ async function enregistrerArticle() {
               <div class="col-md-4">
                 <label for="famille" class="form-label">Famille*</label>
                 <select v-model="idFamille" class="form-select" required>
-                  <option value="">-- Sélectionner une famille --</option>
+                  <option value="" disabled>-- Sélectionner une famille --</option>
                   <option v-for="f in famille" 
                   :key="f.idFam" 
                   :value="f.idFam">
@@ -206,7 +207,7 @@ async function enregistrerArticle() {
             <div class="col-md-4">
               <label for="unite" class="form-label">Unité*</label>
               <select v-model="idUnite" @change="renseignerConditionnement" class="form-select" required>
-                <option value="">-- Sélectionner une unité --</option>
+                <option value="" disabled>-- Sélectionner une unité --</option>
                 <option v-for="u in unite" :key="u.idU" :value="u.idU">
                   {{ u.intituleU }}
                 </option>

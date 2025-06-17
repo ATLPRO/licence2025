@@ -40,7 +40,7 @@ async function chargerInfosArticle(refArt) {
         refArt: entete.refArt,
         desArt: entete.desArt,
         typeArt: entete.typeArt,
-        
+        idArt:entete.idArt,
       }
        } 
     }catch (err) {
@@ -54,6 +54,7 @@ chargerInfosArticle(props.refArt)
 
   const res3 = await fetch('http://localhost/apiLicence2025/controller/article/getAllMatPre.php?host=localhost&dbname=licence2025&username=root&password=')
   matieres.value = await res3.json()
+  console.log('Matières chargées :', matieres.value)
 })
  //selection de matieres premieres et mise ajour des champs qte pu et unite
  // 🔁 Watcher : met à jour les champs quand on choisit une matière première
@@ -72,23 +73,56 @@ function miseAjourQtePrixUnite(nouveauComp){
     }
 }
 function ajouterComposant() {
-    //controle des doublons
-  if (nouveauComp.value.id && parseFloat(nouveauComp.value.qteA) > 0 && parseFloat(nouveauComp.value.puA) > 0 && nouveauComp.value.intituleU) {
-    const matiere = matieres.value.find(m => m.idArt === nouveauComp.value.id)
-    if (composants.value.find(c => c.id === nouveauComp.value.id)) {
-  alert("Cette matière première est déjà ajoutée.")
-  return
-    }
-    composants.value.push({
-      id:nouveauComp.value.id,
-      reference: matiere.reference,
-      qteA:nouveauComp.value.qteA,
-      puA:nouveauComp.value.puA,
-      intituleU:nouveauComp.value.intituleU,
-    })
-    //vider les champs apres ajout
-    nouveauComp.value = { id: '', qteA: '',puA:'', intituleU: '' }
+  const { id, qteA, puA, intituleU } = nouveauComp.value
+
+  // Debug : voir les valeurs dans la console
+  console.log('Valeur saisie:', nouveauComp.value)
+
+  // Vérification des champs
+  if (
+    !id ||
+    isNaN(parseFloat(qteA)) || parseFloat(qteA) <= 0 ||
+    isNaN(parseFloat(puA)) || parseFloat(puA) <= 0 ||
+    !intituleU.trim()
+  ) {
+    alert("Veuillez remplir tous les champs correctement.")
+    return
   }
+
+  // Doublon
+  if (composants.value.find(c => c.id === id)) {
+    alert("Cette matière première est déjà ajoutée.")
+    return
+  }
+
+  // Ajout
+  const matiere = matieres.value.find(m => m.idArt === id)
+  composants.value.push({
+    id,
+    reference: matiere.reference,
+    qteA,
+    puA,
+    intituleU
+  })
+
+  // Réinitialisation des champs
+  nouveauComp.value = {
+    id: '',
+    qteA: '',
+    puA: '',
+    intituleU: ''
+  }
+}
+
+function remplirChampsPourModification(index) {
+  const comp = composants.value[index]
+
+  nouveauComp.value.id = comp.id
+  nouveauComp.value.qteA = comp.qteA
+  nouveauComp.value.puA = comp.puA
+  nouveauComp.value.intituleU = comp.intituleU
+  
+  composants.value.splice(index, 1)
 }
 
 function supprimerComposant(index) {
@@ -97,23 +131,29 @@ function supprimerComposant(index) {
 
 async function enregistrerNomenclature() {
   const payload = {
-    refArt: article.value.refArt,
+    idArt: article.value.idArt,
     composants: composants.value.map(c => ({
-      id: c.id,
-      qte: c.qte,
-      unite: c.unite,
+      idArtFils: c.id,
+      qteN: c.qteA,
+      puN: c.puA
     }))
   }
 
-  const res = await fetch('http://localhost/api/article/enregistrerNomenclature.php', {
+  const nommer = await fetch('http://localhost/apiLicence2025/controller/nommer/createnommer.php?host=localhost&dbname=licence2025&username=root&password=', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   })
-
-  const result = await res.json()
-  alert(result.message)
+if (!nommer.ok) {
+  const err = await nommer.json()
+  alert("Erreur serveur : " + err.message)
+  return
 }
+const result = await nommer.json()
+alert("Article  " + article.value.desArt + " nommé avec succès")
+
+}
+
 </script>
 
 <template>
@@ -121,7 +161,7 @@ async function enregistrerNomenclature() {
     <!-- En-tête de l'article -->
     <div class="card mb-3">
       <div class="card-header bg-primary text-white">
-        Définir la nomenclature de l'article
+        Définir la nomenclature de l'article "<strong>{{ article.desArt }}</strong>  "
       </div>
       <div class="card-body row">
         <div class="col-md-4"><strong>Référence :</strong> {{ article.refArt }}</div>
@@ -135,6 +175,7 @@ async function enregistrerNomenclature() {
       <div class="col-md-3">
         <label class="form-label">Matière première</label>
         <select v-model="nouveauComp.id" class="form-select" @change="miseAjourQtePrixUnite(nouveauComp)">
+          <option disabled value="">-- Choisir --</option>
           <option v-for="mat in matieres" 
           :key="mat.idArt" :value="mat.idArt" >
             {{ mat.reference }}
@@ -181,11 +222,14 @@ async function enregistrerNomenclature() {
               <td>{{ comp.puA }}</td>
               <td>{{ comp.intituleU }}</td>
               <td>
-                <button class="btn btn-sm btn-danger" @click="supprimerComposant(i)">Supprimer</button>
+                <button class="btn btn-sm btn-danger" @click="supprimerComposant(i)">X</button>
+                <button @click="remplirChampsPourModification(i)" class="btn btn-sm text-warning border-0 me-1" title="Modifier">
+                  <i class="bi bi-pencil-square"></i>
+                </button>
               </td>
-            </tr>
+              </tr>
             <tr v-if="composants.length === 0">
-              <td colspan="4" class="text-center text-muted">Aucun composant défini</td>
+              <td colspan="5" class="text-center text-muted">Aucun composant défini</td>
             </tr>
           </tbody>
         </table>

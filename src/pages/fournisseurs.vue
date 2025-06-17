@@ -94,7 +94,7 @@ const fourFiltres = computed(() => {
       <!-- Boutons et recherche -->
       <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <div class="btn-group">
-          <button class="btn btn-secondary btn-sm" @click="openAjoutModal">Nouveau</button>
+          <button class="btn btn-primary btn-sm" @click="openAjoutModal">Nouveau</button>
           <!-- <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalModifier">Modifier</button>
           <button class="btn btn-secondary btn-sm">Supprimer</button> -->
         </div>

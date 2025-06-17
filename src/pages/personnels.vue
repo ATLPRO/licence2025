@@ -98,9 +98,9 @@ async function deletepers(matriculePers) {
       <!-- Boutons et recherche -->
       <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <div class="btn-group">
-          <button @click="openAjoutModal" class="btn btn-secondary btn-sm">Nouveau</button>
-          <button @click="openfonction" class="btn btn-secondary btn-sm">Fonction</button>
-          <button @click="openservice" class="btn btn-secondary btn-sm">Service</button>
+          <button @click="openAjoutModal" class="btn btn-primary btn-sm">Nouveau</button>
+          <button @click="openfonction" class="btn btn-primary btn-sm">Fonction</button>
+          <button @click="openservice" class="btn btn-primary btn-sm">Service</button>
         </div>
         <div class="input-group" style="max-width: 200px;">
           <input type="text" class="form-control form-control-sm" placeholder="Rechercher...">

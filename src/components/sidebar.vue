@@ -74,7 +74,7 @@ const logout = () => {
 
 <style scoped>
 .router-link-active {
-  background-color: #1ABC9C;
+  background-color: var(--bs-primary);
   border-radius: 0.25rem;
 }
 /* Assure une hauteur de 100% pour que mt-auto fonctionne */

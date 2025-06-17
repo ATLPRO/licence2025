@@ -1,6 +1,20 @@
+<script setup>
+import createProd from '@/components/production/createProd.vue';
 
-  
-  <script setup>
+import {ref} from 'vue'
+// État des modals
+const showAjout = ref(false)
+const showModifier = ref(false)
+const shawDetail=ref(false)
+
+// Fonctions modals
+const openAjoutModal = () => {
+  showAjout.value = true
+}
+
+const closeAjoutModal = () => {
+  showAjout.value = false
+}
   const productions = [
     {
       numpro: 'PROD001',
@@ -15,6 +29,33 @@
       couttotal: 72000
     }
   ]
+
+  const imprimerCommande = (pro) => {
+  // Exemple simple : ouvrir une nouvelle fenêtre avec les détails de la commande
+  const contenu = `
+    <html>
+      <head>
+        <title>Commande ${commande.numcom}</title>
+        <style>
+          body { font-family: Arial; padding: 20px; }
+          h2 { color: rgb(104, 128, 251); }
+        </style>
+      </head>
+      <body>
+        <h2>Commande n° ${commande.numcom}</h2>
+        <p><strong>Date :</strong> ${commande.datecom}</p>
+        <p><strong>Fournisseur :</strong> ${commande.fournisseur}</p>
+        <p><strong>Montant total :</strong> ${commande.montant} FCFA</p>
+        <!-- Tu peux ajouter plus de champs ici -->
+      </body>
+    </html>
+  `
+  const fenetre = window.open('', '_blank')
+  fenetre.document.write(contenu)
+  fenetre.document.close()
+  fenetre.print()
+}
+
   </script>
   
 
@@ -32,7 +73,7 @@
       <!-- Boutons et recherche -->
       <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <div class="btn-group">
-          <button class="btn btn-secondary btn-sm">Nouveau</button>
+           <button class="btn btn-primary btn-sm" @click="openAjoutModal">Nouveau</button>
          
         </div>
         <div class="input-group" style="max-width: 200px;">
@@ -66,6 +107,9 @@
                 <button class="btn btn-sm text-danger border-0" title="Supprimer">
                   <i class="bi bi-trash"></i>
                 </button>
+                <button @click="imprimerCommande(pro)" class="btn btn-sm text-success border-0 me-1" title="Imprimer">
+                  <i class="bi bi-printer"></i>
+                </button>
               </td>
             </tr>
           </tbody>
@@ -77,6 +121,21 @@
         <button class="btn btn-secondary btn-sm">Imprimer</button>
       </div>
     </div>
+     <!-- Modal d’AJOUT -->
+  <div v-if="showAjout" class="modal-backdrop fade show"></div>
+  <div v-if="showAjout" class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Creer et simuler une production</h5>
+          <button class="btn-close" @click="closeAjoutModal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <createProd @close="closeAjoutModal" />
+        </div>
+      </div>
+    </div>
+  </div>
   </template>
   <style scoped>
  
