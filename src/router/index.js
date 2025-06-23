@@ -12,6 +12,7 @@ import Fournisseurs from '@/pages/fournisseurs.vue'
 import Commandes from '@/pages/commandes.vue'
 import Production from '@/pages/production.vue'
 import Personnel from '@/pages/personnels.vue'
+import commandeMag from '@/pages/commandeMag.vue'
 
 const routes = [
   { path: '/', redirect: '/connexion' },
@@ -26,6 +27,17 @@ const routes = [
   { path: '/commande', component: Commandes },
   { path: '/production', component: Production },
   { path: '/personnel', component: Personnel },
+  {
+    path: '/commandeMag',
+    name: 'commandeMag',
+    component: commandeMag
+  },
+  {
+  path: '/nouveau-transfert',
+  name: 'Transfert',
+  component: () => import('@/components/commandeMag/nouveauTransfert.vue')
+},
+
   { path: '/createArticle', component: () => import('@/components/articles/createArticle.vue'), name: 'createArticle' },
   { path: '/createMagasin', component: () => import('@/components/magasin/createMagasin.vue'), name: 'createMagasin' },
   {

@@ -14,6 +14,7 @@ const menusDirecteur = [
   { path: '/commande', label: 'Achats', icon: 'bi-cart' },
   { path: '/production', label: 'Production', icon: 'bi-gear' },
   { path: '/personnel', label: 'Personnel', icon: 'bi-people' },
+  { path: '/commandeMag', label: 'Commande Magasin', icon: 'bi-cart' },
 ]
 
 const menusComptable = [

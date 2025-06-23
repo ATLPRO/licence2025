@@ -1,9 +1,12 @@
 <script setup>
   import { ref,onMounted,watch,computed } from 'vue'
   import { useRouter } from 'vue-router'
+  const emit = defineEmits(['close','refresh'])
+
   
  const famille=ref([])// Liste des familles récupérées depuis l’API
  const unite=ref([])
+ const articleId=ref('')
   const reference=ref('')
   const designation=ref('')
   const type=ref('')
@@ -63,6 +66,7 @@ function renseignerConditionnement() {
 // Charger dès que la reference de l'article change
 watch(() => props.article, (a) => {
   if (a) {
+    articleId.value=a.idArt
     reference.value = a.refArt
     designation.value = a.desArt
     quantiteUnitaire.value = a.QteUArt
@@ -72,14 +76,17 @@ watch(() => props.article, (a) => {
     stockInitial.value = a.stockMin
     type.value = a.typeArt
     idFam.value = a.idFam  // c'est ce qui sélectionne l'option du <select>
+    idUnite.value = a.idU // 🟢 Ajouté pour que la partie avoir fonctionne
+    qteA.value = a.qteA   // si disponible
+    puA.value = a.puA 
   }
 }, { immediate: true })
-
+console.log("article",articleId.value)
  //pour modifier un article
 async function handleSubmit() {
-  error.value = ''
+   error.value = ''
   success.value = ''
-  if (!reference.value || !designation.value || !quantiteUnitaire.value || !stockInitial.value || !grammage.value || !prixAchat.value  || !type.value ) {
+  if (!reference.value || !designation.value || quantiteUnitaire.value==='' || stockInitial.value==='' || !grammage.value || prixAchat.value===''  || !type.value || !idUnite.value) {
     error.value = "Tous les champs sont requis."
     return
   }
@@ -92,32 +99,51 @@ async function handleSubmit() {
     PV:prixVente.value,
     typeArt:type.value,
     stockMin:stockInitial.value,
-    idFam:idFamille.value,
+    idFam:idFam.value,
   }
   try {
-    const res = await fetch('http://localhost/apiLicence2025/controller/article/updatearticle.php?host=localhost&dbname=licence2025&username=root&password=', {
+    const resArticle = await fetch('http://localhost/apiLicence2025/controller/article/updatearticle.php?host=localhost&dbname=licence2025&username=root&password=', {
 
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
 
-    const data = await res.json()
+    const data = await resArticle.json()
     console.log("api",data)
-    if (res.ok) {
-      success.value = data.message || "Article Modifier avec succès."
-      // Petite pause avant redirection
-      setTimeout(() => {
-        router.push('/articles')
-      }, 1500)
+    if (resArticle.ok && data.success===true) {
+      //creer les entrer dans avoir
+      const avoirpayload = {
+    idArt:articleId.value,
+    idU: idUnite.value,
+    qteA: qteA.value,
+    puA: puA.value,
+  }
+  console.log("Payload avoir :", avoirpayload)
+
+    const resAvoir = await fetch('http://localhost/apiLicence2025/controller/avoir/updateAvoir.php?host=localhost&dbname=licence2025&username=root&password=', {
+
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(avoirpayload),
+    })
+     const dataAvoir = await resAvoir.json()
+      if (resAvoir.ok) {
+        alert('✅ Article modifié avec succes');
+         emit('refresh')  // 🔄 Demande au parent de recharger la liste
+        emit('close') // pas de router.push ici
+
+        
+      } else {
+        error.value = dataAvoir.message || "Erreur lors de l'enregistrement dans avoir."
+      }
     } else {
-      error.value = data.message || "Erreur lors de la modification."
+      error.value = data.message || "Erreur lors de la création de l'article."
     }
   } catch (e) {
     error.value = "Erreur réseau ou serveur indisponible."
     console.error(e)
   }
-
 }
  
   </script>
@@ -195,11 +221,11 @@ async function handleSubmit() {
             </div>
             <div class="col-md-4">
               <label for="qteA" class="form-label">Quantité </label>
-              <input v-model="qteA" type="number" min="0" class="form-control" id="qteA"  />
+              <input v-model="qteA" type="number" min="0" step="any" class="form-control" id="qteA"  />
             </div>
             <div class="col-md-4">
               <label for="puA" class="form-label">Prix unitaire (conditionné)</label>
-              <input v-model="puA" type="number" min="0" class="form-control" id="puA"  />
+              <input v-model="puA" type="number" min="0" step="any" class="form-control" id="puA"  />
             </div>
           </div>
             <div class="mt-4 d-flex justify-content-between">

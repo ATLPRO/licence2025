@@ -1,6 +1,6 @@
 <script setup>
   import { ref,onMounted } from 'vue'
-  import { useRouter } from 'vue-router'
+  const emit = defineEmits(['close','refresh'])
   
   const famille=ref([])// Liste des familles récupérées depuis l’API
   const unite=ref([])// Liste des unites récupérées depuis l’API
@@ -115,9 +115,8 @@ async function enregistrerArticle() {
      const dataAvoir = await resAvoir.json()
       if (resAvoir.ok) {
         alert('✅ Article enregistrer avec succes');
-        setTimeout(() => {
-          router.push('/articles')
-        }, 1500)
+        emit('refresh')  // 🔄 Demande au parent de recharger la liste
+        emit('close') // pas de router.push ici
       } else {
         error.value = dataAvoir.message || "Erreur lors de l'enregistrement dans avoir."
       }
@@ -219,7 +218,7 @@ async function enregistrerArticle() {
             </div>
             <div class="col-md-4">
               <label for="puA" class="form-label">Prix unitaire (conditionné)</label>
-              <input v-model="puA" type="number" min="0" class="form-control" id="puA"  />
+              <input v-model="puA" type="number" min="0" step="any" class="form-control" id="puA"  />
             </div>
           </div>
             <div class="mt-4 d-flex justify-content-between">

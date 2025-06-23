@@ -7,35 +7,15 @@ const magasin=ref([])
 const magasins=ref('')
 const reference=ref('')
 const idarticle=ref('')
-const quantite=ref(0)
-const prixUnitaire=ref(0)
-const grammage=ref('')
-//charger les fournisseurs dans le select option
-async function chargeFournisseur() {
-  try {
-    const res = await fetch('http://localhost/apiLicence2025/controller/fournisseur/getfournisseur.php?host=localhost&dbname=licence2025&username=root&password=')
-    if (!res.ok) throw new Error("Erreur serveur")
-    fournisseur.value = await res.json()
-  } catch (err) {
-    error.value = "Impossible de charger les fournisseurs"
-    console.error(err)
-  }
-}
-async function chargearticle() {
-  try {
-    const res = await fetch('http://localhost/apiLicence2025/controller/avoir/readuniteavoir.php?host=localhost&dbname=licence2025&username=root&password=')
-    if (!res.ok) throw new Error("Erreur serveur")
-    uniteA.value = await res.json()
-  } catch (err) {
-    error.value = "Impossible de charger les unites"
-    console.error(err)
-  }
-}
+const magasinsList = ref([]); 
+const magasinDepart = ref('')
+const magasinArrivee = ref('')
+
 async function chargerMagasin() {
   try {
     const res = await fetch('http://localhost/apiLicence2025/controller/magasin/getMagasins.php?host=localhost&dbname=licence2025&username=root&password=')
     if (!res.ok) throw new Error("Erreur serveur")
-    magasin.value = await res.json()
+    magasinsList.value = await res.json()
   } catch (err) {
     error.value = "Impossible de charger les magasins"
     console.error(err)
@@ -52,11 +32,40 @@ async function genererNumeroCommande() {
   }
 }
 onMounted(() => {
-  chargeFournisseur();
-  chargearticle()
+  //chargeFournisseur();
+  //chargearticle()
   chargerMagasin()
   genererNumeroCommande()
 })
+//verifie que les magasins choisi soient differents
+watch([magasinDepart, magasinArrivee], ([depart, arrivee]) => {
+  if (depart && arrivee && depart === arrivee) {
+    alert("Le magasin de départ et d’arrivée doivent être différents.")
+    magasinArrivee.value = ''
+  }
+})
+//renvoies les articles disponible selon le magasin
+const articlesDispo = ref([])
+
+watch(magasinDepart, async (idmag) => {
+    console.log("Magasin sélectionné :", idmag)
+  if (!idmag) return
+  try {
+    const res = await fetch(`http://localhost/apiLicence2025/controller/stock/getArticlesByMagasin.php?&host=localhost&dbname=licence2025&username=root&password=`
+    ,{
+  method:'POST',
+       headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idmag })
+    });
+  
+    if (!res.ok) throw new Error("Erreur serveur")
+    articlesDispo.value = await res.json()
+  } catch (err) {
+    console.error("Erreur lors du chargement des articles du magasin", err)
+  }
+})
+
+
 
 const commande = reactive({
   numero: '',
@@ -84,9 +93,9 @@ const supprimerLigne = (index) => {
 // Mettre à jour le prix unitaire en fonction de l'article sélectionné
 function mettreAJourPrix(ligne){
   
-   const articleChoisie = uniteA.value.find(u => u.idArt == ligne.articleId)
+   const articleChoisie = articlesDispo.value.find(u => u.idArt == ligne.articleId)
   if (articleChoisie) {
-    ligne.quantite = articleChoisie.qteA
+    ligne.quantite = articleChoisie.qteS
     ligne.prixUnitaire = articleChoisie.puA
     ligne.grammage = articleChoisie.intituleU
     ligne.idu=articleChoisie.idU
@@ -113,31 +122,29 @@ console.log("Utilisateur connecté :", utilisateur)
 
 const personnel = ref(utilisateur ? utilisateur.idpers : '');  // idpers
 const personnelNom = ref(utilisateur ? utilisateur.nompers : ''); // nom
+
 const envoyerCommande = async () => {
-   if (!commande.numero || !commande.date || !commande.fournisseurId || commande.lignes.length === 0 ) {
+   if (!commande.numero || !commande.date  || commande.lignes.length === 0 ) {
     alert("Veuillez remplir tous les champs obligatoires et ajouter au moins un article.");
     return;
   }
   // Construire le payload
   const payload = {
-    numcom: commande.numero,
-    refcom: reference.value,
-    datecom: commande.date,
-    montantTcom: totalCommande.value,
-    idpers: personnel.value,     // à remplir dynamiquement selon l'utilisateur connecté
-    idfour: commande.fournisseurId,
-    idmag: magasins.value,
+    numT: commande.numero,
+    dateT: commande.date,
+    idMagSrc: magasinDepart.value,
+    idMagDest: magasinArrivee.value,
+    idpers: personnel.value,  
     lignes: commande.lignes.map(ligne => ({
       idArt: ligne.articleId,
-      idU: ligne.idu,
-      qteC: ligne.quantite,
-      puC: ligne.prixUnitaire
+      qteT: ligne.quantite,
+      puT: ligne.prixUnitaire
       
     }))
   };
 
   try {
-    const res = await fetch('http://localhost/apiLicence2025/controller/commande/validerCommandes.php?host=localhost&dbname=licence2025&username=root&password=', {
+    const res = await fetch('http://localhost/apiLicence2025/controller/transfert/createtransfert.php?host=localhost&dbname=licence2025&username=root&password=', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -147,7 +154,7 @@ const envoyerCommande = async () => {
 // const text = await res.text();
 // console.log('Réponse brute:', text);  
     const result = await res.json();
-
+    console.log('Réponse brute:', result);
     if (!res.ok) throw new Error(result.message || 'Erreur lors de l\'envoi');
 
     alert('✅ ' + result.message);
@@ -168,8 +175,6 @@ const envoyerCommande = async () => {
 
 <template>
   <div class="container mt-4">
-    <h4 class="mb-4 text-primary">Nouveau Achat</h4>
-
     <!-- En-tête -->
     <div class="row mb-3">
       <div class="col-md-4">
@@ -181,41 +186,41 @@ const envoyerCommande = async () => {
         <input v-model="commande.date" type="date" class="form-control" required />
       </div>
       <div class="col-md-4">
-        <label class="form-label">Fournisseur *</label>
-        <select v-model="commande.fournisseurId" class="form-select" required>
-          <option disabled value="">-- Choisir --</option>
-          <option v-for="f in fournisseur" :key="f.idfour" :value="f.idfour">{{ f.nomfour }}</option>
-        </select>
+        <label class="form-label">Reference de transfert *</label>
+        <input v-model="reference" type="text" class="form-control" required />
       </div>
     </div>
     <div class="row mb-3">
       <div class="col-md-4">
-        <label class="form-label">Reference de l'achat *</label>
-        <input v-model="reference" type="text" class="form-control" required />
+        <label class="form-label">Magasin De depart*</label>
+        <select v-model="magasinDepart" class="form-select" required>
+          <option disabled value="">-- Choisir --</option>
+          <option v-for="m in magasinsList" :key="m.idmag" :value="m.idmag">{{ m.nomMag }}</option>
+        </select>
       </div>
       <div class="col-md-4">
-        <label class="form-label">Magasin *</label>
-        <select v-model="magasins" class="form-select" required>
+        <label class="form-label">Magasin D'arriver*</label>
+        <select v-model="magasinArrivee" class="form-select" required>
           <option disabled value="">-- Choisir --</option>
-          <option v-for="m in magasin" :key="m.idmag" :value="m.idmag">{{ m.nomMag }}</option>
+          <option v-for="m in magasinsList" :key="m.idmag" :value="m.idmag">{{ m.nomMag }}</option>
         </select>
       </div>
      <div class="col-md-4">
-      <label class="form-label">Achat du:</label>
+      <label class="form-label">Commande du:</label>
       <input :value="personnelNom" type="text" class="form-control" readonly />
     </div>
 
     </div>
 
     <!-- Corps (lignes de commande) -->
-    <h5 class="mt-4 mb-2">Articles à acheter</h5>
+    <h5 class="mt-4 mb-2">Articles à transferer</h5>
     <table class="table table-bordered">
       <thead>
         <tr>
           <th>Article</th>
-           <th>Grammage</th>
           <th>Quantité</th>
           <th>Prix unitaire</th>
+           <th>Grammage</th>
           <th>Total</th>
           <th>Action</th>
         </tr>
@@ -225,14 +230,14 @@ const envoyerCommande = async () => {
           <td>
             <select v-model="ligne.articleId" @change="mettreAJourPrix(ligne)" class="form-select" required>
               <option disabled value="">-- Choisir --</option>
-              <option v-for="article in uniteA" :key="article.idArt" :value="article.idArt">
+              <option v-for="article in articlesDispo" :key="article.idArt" :value="article.idArt">
                 {{ article.desArt }}
               </option>
             </select>
           </td>
-          <td><input v-model="ligne.grammage" type="text" min="0" class="form-control" readonly /></td>
           <td><input v-model.number="ligne.quantite" type="number" min="1" class="form-control" required /></td>
           <td><input v-model.number="ligne.prixUnitaire" type="number" min="0" class="form-control"  /></td>
+          <td><input v-model="ligne.grammage" type="text" min="0" class="form-control" readonly /></td>
           <td>{{ totalLigne(ligne) }} FCFA</td>
           <td><button class="btn btn-danger btn-sm" @click="supprimerLigne(index)">X</button></td>
         </tr>
@@ -247,8 +252,8 @@ const envoyerCommande = async () => {
     </div>
 
     <div class="mt-4 text-end">
-      <button class="btn btn-success" @click="envoyerCommande">Valider l'achat</button>
-      <button class="btn btn-success ms-2">Imprimer</button>
+      <button class="btn btn-success" @click="envoyerCommande">Valider le transfert</button>
+      <!-- <button class="btn btn-success ms-2">Imprimer</button> -->
     </div>
   </div>
 </template>

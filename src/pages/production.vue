@@ -1,12 +1,12 @@
 <script setup>
 import createProd from '@/components/production/createProd.vue';
-
-import {ref} from 'vue'
+import detailprod from '@/components/production/detailprod.vue';
+import {ref,onMounted} from 'vue'
 // État des modals
 const showAjout = ref(false)
 const showModifier = ref(false)
 const shawDetail=ref(false)
-
+const productions=ref([])
 // Fonctions modals
 const openAjoutModal = () => {
   showAjout.value = true
@@ -15,20 +15,27 @@ const openAjoutModal = () => {
 const closeAjoutModal = () => {
   showAjout.value = false
 }
-  const productions = [
-    {
-      numpro: 'PROD001',
-      reference: 'PRO-A-001',
-      datepro: '2025-05-01',
-      couttotal: 50000
-    },
-    {
-      numpro: 'PROD002',
-      reference: 'PRO-B-002',
-      datepro: '2025-05-03',
-      couttotal: 72000
-    }
-  ]
+//ouvrir le detail
+const productionSelectionnee = ref(null)
+function openDetail(pro) {
+  productionSelectionnee.value = pro
+  shawDetail.value = true
+}
+
+const closeDetail = () => {
+  shawDetail.value = false
+  //codefour.value = null
+}
+ onMounted(async () => {
+  try {
+    const res = await fetch('http://localhost/apiLicence2025/controller/production/readpro.php?host=localhost&dbname=licence2025&username=root&password=')
+    if (!res.ok) throw new Error("Erreur serveur")
+    productions.value = await res.json()
+  } catch (err) {
+    error.value = "Impossible de charger les commandes"
+    console.error(err)
+  }
+})
 
   const imprimerCommande = (pro) => {
   // Exemple simple : ouvrir une nouvelle fenêtre avec les détails de la commande
@@ -96,13 +103,16 @@ const closeAjoutModal = () => {
           </thead>
           <tbody>
             <tr v-for="(pro, index) in productions" :key="index">
-              <td>{{ pro.numpro }}</td>
-              <td>{{ pro.reference }}</td>
-              <td>{{ pro.datepro }}</td>
-              <td>{{ pro.couttotal }} FCFA</td>
+              <td>{{ pro.numprod }}</td>
+              <td>{{ pro.refprod }}</td>
+              <td>{{ pro.dateprod }}</td>
+              <td>{{ pro.coutTprod }} FCFA</td>
               <td class="text-center">
                 <button class="btn btn-sm text-warning border-0 me-1" title="Modifier">
                   <i class="bi bi-pencil-square"></i>
+                </button>
+                <button @click="openDetail(pro)" class="btn btn-sm text-primary border-0 me-1" title="Détails">
+                  <i class="bi bi-eye"></i>
                 </button>
                 <button class="btn btn-sm text-danger border-0" title="Supprimer">
                   <i class="bi bi-trash"></i>
@@ -116,10 +126,7 @@ const closeAjoutModal = () => {
         </table>
       </div>
   
-      <!-- imprimer -->
-      <div class="text-end mt-3">
-        <button class="btn btn-secondary btn-sm">Imprimer</button>
-      </div>
+      
     </div>
      <!-- Modal d’AJOUT -->
   <div v-if="showAjout" class="modal-backdrop fade show"></div>
@@ -132,6 +139,22 @@ const closeAjoutModal = () => {
         </div>
         <div class="modal-body">
           <createProd @close="closeAjoutModal" />
+        </div>
+      </div>
+    </div>
+  </div>
+   <!-- Modal de detail -->
+ <div v-if="shawDetail" class="modal-backdrop fade show"></div>
+  <div v-if="shawDetail" class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Detail de la production</h5>
+          <button class="btn-close" @click="closeDetail" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <detailprod v-if="shawDetail"
+            :idprod="productionSelectionnee?.idprod" @fermer="closeDetail" />
         </div>
       </div>
     </div>

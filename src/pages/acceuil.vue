@@ -3,6 +3,8 @@ import { onMounted, ref } from 'vue'
 import createArticle from '@/components/articles/createArticle.vue'
 import createCom from '@/components/commande/createCom.vue'
 import createProd from '@/components/production/createProd.vue'
+import productionChart from '@/components/productionChart.vue'
+import productionChartStock from '@/components/productionChartStock.vue'
 
 // État des modals
 const showAjout = ref(false)
@@ -41,7 +43,7 @@ const stats = ref({
 })
 
 async function chargerStats() {
-  const res = await fetch('http://localhost/apiLicence2025/controller/dashboard.php?host=localhost&dbname=licence2025&username=root&password=')
+  const res = await fetch('http://localhost/apiLicence2025/controller/stats/dashboard.php?host=localhost&dbname=licence2025&username=root&password=')
   if (res.ok) {
     stats.value = await res.json()
   }
@@ -49,10 +51,51 @@ async function chargerStats() {
 const cards = [
   { key: 'articles', label: 'Articles', icon: 'bi bi-box-seam', color: 'bg-primary' },
   { key: 'fournisseurs', label: 'Fournisseurs', icon: 'bi bi-truck', color: 'bg-success' },
-  { key: 'commandes', label: 'Achats', icon: 'bi bi-cart-check', color: 'bg-warning' },
-  { key: 'magasins', label: 'Magasins', icon: 'bi bi-building', color: 'bg-danger' }
+  { key: 'commandes', label: 'Achats', icon: 'bi bi-cart-check', color: 'bg-warning' }
 ]
-onMounted(chargerStats);
+
+//const alertes = ref([])
+const alertesMatierePremiere = ref([])
+const stocksProduitFini = ref([])
+
+const chargerAlertes = async () => {
+  const res = await fetch('http://localhost/apiLicence2025/controller/stats/getAlerteStock.php?host=localhost&dbname=licence2025&username=root&password=')
+  if (res.ok) {
+   const data = await res.json()
+    alertesMatierePremiere.value = data.alertes_matiere_premiere || []
+    stocksProduitFini.value = data.stocks_produit_fini || []
+  }
+}
+const dernieresCommandes = ref([])
+const chargerDernierCom = async () => {
+   try {
+    const res = await fetch('http://localhost/apiLicence2025/controller/stats/getDernierCommande.php?host=localhost&dbname=licence2025&username=root&password=')
+    const json = await res.json()
+    if (json.success) {
+      dernieresCommandes.value = json.data
+    }
+  } catch (err) {
+    console.error("Erreur chargement dernières commandes :", err)
+  }
+}
+const dernieresProduction = ref([])
+const chargerDernierPro = async () => {
+   try {
+    const res = await fetch('http://localhost/apiLicence2025/controller/stats/getDernierProduction.php?host=localhost&dbname=licence2025&username=root&password=')
+    const json = await res.json()
+    if (json.success) {
+      dernieresProduction.value = json.data
+    }
+  } catch (err) {
+    console.error("Erreur chargement dernières commandes :", err)
+  }
+}
+onMounted(() => {
+  chargerStats()
+  chargerAlertes()
+  chargerDernierCom()
+  chargerDernierPro()
+})
 
 </script>
 
@@ -63,12 +106,15 @@ onMounted(chargerStats);
       <h2 class="text-primary">Tableau de bord</h2>
      
     </div>
-
+    
+     <div class="container  mt-1">
+        <productionChart />
+      </div>
     <!-- Cartes statistiques -->
    
    <div class="container py-2">
     <div class="row g-2">
-      <div class="col-12 col-sm-3 col-lg-3" v-for="(valeur, label, index) in cards" :key="index">
+      <div class="col-12 col-sm-3 col-lg-4" v-for="(valeur, label, index) in cards" :key="index">
         <div :class="`card text-white shadow ${valeur.color}`">
           <div class="card-body">
             <h5 class="card-title">{{ valeur.label }}</h5>
@@ -82,13 +128,67 @@ onMounted(chargerStats);
 
 
     <!-- Alertes -->
-    <div class="card p-3 shadow-sm mb-4">
-      <h5 class="mb-3 text-danger">Alertes</h5>
-      <ul class="list-group list-group-flush">
-        <li class="list-group-item" v-for="alerte in alertes" :key="alerte">⚠️ {{ alerte }}</li>
-      </ul>
-    </div>
+<div class="card p-3 shadow-sm mb-4" v-if="alertesMatierePremiere.length || stocksProduitFini.length">
+  <h5 class="mb-3 text-danger">Alertes matières premières</h5>
+  <ul class="list-group list-group-flush" v-if="alertesMatierePremiere.length">
+    <li class="list-group-item" v-for="alerte in alertesMatierePremiere" :key="alerte">
+      ⚠️ {{ alerte }}
+    </li>
+  </ul>
 
+  <h5 class="mb-3 mt-4 text-primary">Stocks produits finis</h5>
+  <ul class="list-group list-group-flush" v-if="stocksProduitFini.length">
+    <li class="list-group-item" v-for="stock in stocksProduitFini" :key="stock">
+      ℹ️ {{ stock }}
+    </li>
+  </ul>
+</div>
+<div>
+    <h5>Dernières achats fournisseurs</h5>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Référence</th>
+          <th>Date</th>
+          <th>Fournisseur</th>
+          <th>Montant total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="cmd in dernieresCommandes" :key="cmd.idcom">
+          <td>{{ cmd.refcom }}</td>
+          <td>{{ new Date(cmd.datecom).toLocaleDateString() }}</td>
+          <td>{{ cmd.fournisseur }}</td>
+          <td>{{ cmd.montantTcom }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+<div>
+    <h5>Dernières productions</h5>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Numero</th>
+          <th>Date</th>
+          <th>Personnel</th>
+           <th>Article fini</th>
+          <th>Qté produite</th>
+          <th>Coût total (FCFA)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="prod in dernieresProduction" :key="prod.idprod">
+          <td>{{ prod.numprod }}</td>
+          <td>{{ new Date(prod.dateprod).toLocaleDateString() }}</td>
+          <td>{{ prod.personnel }}</td>
+           <td>{{ prod.article_fini }}</td>
+          <td>{{ prod.quantite_produite }}</td>
+          <td>{{ prod.coutTprod }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
     <!-- Liens rapides -->
     <div class="d-flex flex-wrap gap-2">
       <button class="btn btn-outline-primary " @click="openAjoutArticle"><i class="bi bi-box"></i> Ajouter article</button>

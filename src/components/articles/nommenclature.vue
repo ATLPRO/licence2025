@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-
+ const emit = defineEmits(['close','refresh'])
 const route = useRoute()
 //const refArt = route.params.refArt
 
@@ -10,7 +10,8 @@ const matieres = ref([])
 const composants = ref([])
 // Props : reference de l'article passé par le parent
 const props = defineProps({
-  refArt: String
+  refArt: String,
+  idArt:Number
 })
 
 const nouveauComp = ref({
@@ -47,10 +48,36 @@ async function chargerInfosArticle(refArt) {
     console.error('Erreur chargement détail article :', err)
   }
 }
+async function compositionArticle() {
+   try {
+    const res = await fetch(
+      `http://localhost/apiLicence2025/controller/article/compositionArticle.php?host=localhost&dbname=licence2025&username=root&password=`
+    ,{
+      method:'POST',
+       headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idArt: props.idArt })
+    });
+    if (!res.ok) throw new Error('Erreur serveur')
+    const data = await res.json()
+    console.log('Données reçues :', data)
+    // On suppose que les champs généraux (numcom, date...) sont les mêmes sur chaque ligne
+    composants.value = data.map(c => ({
+      id:c.idArtFils,
+    reference:  c.refArt  + " "+" "+ c.desArt,
+    //designation:c.desArt,
+    qteA:        c.qteN,
+    puA:         c.puN,
+   // montant:    (c.qteN * c.puN).toFixed(2),
+    intituleU:      c.intituleU
+  }))
+       
+    }catch (err) {
+    console.error('Erreur chargement détail article :', err)
+  }
+}
  onMounted(async () => {
 chargerInfosArticle(props.refArt)
-  /* const res2 = await fetch(`http://localhost/apiLicence2025/controller/article/getAllMatPre.php?host=localhost&dbname=licence2025&username=root&password=`)
-  composants.value = await res2.json()  */
+  await compositionArticle(props.idArt)
 
   const res3 = await fetch('http://localhost/apiLicence2025/controller/article/getAllMatPre.php?host=localhost&dbname=licence2025&username=root&password=')
   matieres.value = await res3.json()
@@ -138,6 +165,7 @@ async function enregistrerNomenclature() {
       puN: c.puA
     }))
   }
+console.log('Payload à envoyer :', payload)
 
   const nommer = await fetch('http://localhost/apiLicence2025/controller/nommer/createnommer.php?host=localhost&dbname=licence2025&username=root&password=', {
     method: 'POST',
@@ -151,6 +179,8 @@ if (!nommer.ok) {
 }
 const result = await nommer.json()
 alert("Article  " + article.value.desArt + " nommé avec succès")
+ emit('refresh')  // 🔄 Demande au parent de recharger la liste
+        emit('close') // pas de router.push ici
 
 }
 
@@ -184,11 +214,11 @@ alert("Article  " + article.value.desArt + " nommé avec succès")
       </div>
       <div class="col-md-2">
         <label class="form-label">Quantité</label>
-        <input type="number" v-model="nouveauComp.qteA" min="0" class="form-control" required />
+        <input type="number" v-model="nouveauComp.qteA" min="0" step="any" class="form-control" required />
       </div>
        <div class="col-md-3">
         <label class="form-label">Prix unitaire</label>
-        <input type="number" v-model="nouveauComp.puA" min="0" class="form-control" required />
+        <input type="number" v-model="nouveauComp.puA" min="0" step="any" class="form-control" required />
       </div>
       <div class="col-md-2">
         <label class="form-label">Unité</label>

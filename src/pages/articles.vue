@@ -83,9 +83,10 @@ const closeNommer = () => {
 
 const error = ref('')
 const article=ref([])
+const articles=ref([])
 //afficher les articles
-onMounted(async () => {
-  try {
+async function chargerArticles() {
+ try {
     const res = await fetch('http://localhost/apiLicence2025/controller/article/readarticle.php?host=localhost&dbname=licence2025&username=root&password=')
     if (!res.ok) throw new Error("Erreur serveur")
     article.value = await res.json()
@@ -93,20 +94,26 @@ onMounted(async () => {
     error.value = "Impossible de charger les articles"
     console.error(err)
   }
+}
+onMounted(async () => {
+ chargerArticles()
 })
+ const emit = defineEmits(['refresh'])
   //supprimer larticle
-async function deleteArt(refArt) {
-  if (!confirm("Confirmer la suppression de l'article? " + article.desArt)) return;
+async function deleteArt(article) {
+  if (!confirm(`Confirmer la suppression de l'article "${article.desArt}" ?`)) return;
   try {
     const res = await fetch(`http://localhost/apiLicence2025/controller/article/supprimerVirtuellement.php?host=localhost&dbname=licence2025&username=root&password=`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refArt })
+      body: JSON.stringify({ refArt: article.refArt })
     });
     const result = await res.json();
     if (result.success) {
-      article.value = article.value.filter(f => f.refArt !== refArt);
+      // Supprime de la liste locale
+      articles.value = articles.value.filter(f => f.refArt !== article.refArt);
       alert(result.message);
+      emit('refresh')
     } else {
       alert(result.message);
     }
@@ -197,7 +204,7 @@ const articlesFiltres = computed(() => {
                   <i class="bi bi-diagram-3-fill"></i>
                 </button>
 
-                <button @click="deleteArt(article.refArt)" class="btn btn-sm text-danger border-0" title="Supprimer">
+                <button @click="deleteArt(article)" class="btn btn-sm text-danger border-0" title="Supprimer">
                   <i class="bi bi-trash"></i>
                 </button>
               </td>
@@ -224,7 +231,9 @@ const articlesFiltres = computed(() => {
           <button class="btn-close" @click="closeAjoutModal" aria-label="Fermer"></button>
         </div>
         <div class="modal-body">
-          <createArticle @close="closeAjoutModal" />
+          <createArticle
+          @refresh="chargerArticles"
+          @close="closeAjoutModal" />
         </div>
       </div>
     </div>
@@ -240,7 +249,10 @@ const articlesFiltres = computed(() => {
           <button class="btn-close" @click="closeModifierModal" aria-label="Fermer"></button>
         </div>
         <div class="modal-body">
-          <updateArticle :article="articleAEditer" @close="closeModifierModal" />
+          <updateArticle 
+          :article="articleAEditer" 
+          @close="closeModifierModal"
+           @refresh="chargerArticles"/>
         </div>
       </div>
     </div>
@@ -274,7 +286,10 @@ const articlesFiltres = computed(() => {
         </div>
         <div class="modal-body">
           <nommenclature v-if="shawNommer"
-            :refArt="articleSelectionnee?.refArt" @fermer="closeNommer" />
+            :refArt="articleSelectionnee?.refArt" 
+             :idArt="articleSelectionnee?.idArt"
+              @refresh="chargerArticles"
+             @fermer="closeNommer" />
         </div>
       </div>
     </div>

@@ -170,7 +170,7 @@ const imprimerCommande = (commande) => {
         <table class="table table-hover table-bordered align-middle">
           <thead class="table-primary text-center">
             <tr>
-              <th>Num Commande</th>
+              <th>Num Achat</th>
               <th>Nom Fournisseur</th>
               <th style="min-width: 100px;">Référence</th>
               <th>Date</th>
@@ -204,13 +204,13 @@ const imprimerCommande = (commande) => {
               </td>
             </tr>
              <tr v-if="comFiltres.length === 0">
-              <td colspan="3" class="text-center text-muted">Aucune commande trouvée</td>
+              <td colspan="3" class="text-center text-muted">Aucun achat trouvée</td>
             </tr>
           </tbody>
         </table>
       </div>
         <!-- total ligne -->
-         <div class="text-muted justify-content-right mt-3">Total commande : {{ comFiltres.length  }}</div>
+         <div class="text-muted justify-content-right mt-3">Total de l'achat : {{ comFiltres.length  }}</div>
       <!-- imprimer -->
       
     </div>
