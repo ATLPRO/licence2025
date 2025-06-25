@@ -1,7 +1,7 @@
 <script setup>
 import createProd from '@/components/production/createProd.vue';
 import detailprod from '@/components/production/detailprod.vue';
-import {ref,onMounted} from 'vue'
+import {ref,onMounted,computed} from 'vue'
 // État des modals
 const showAjout = ref(false)
 const showModifier = ref(false)
@@ -36,32 +36,61 @@ const closeDetail = () => {
     console.error(err)
   }
 })
+// Filtrage des production selon le champ de recherche
+const recherche = ref('')
+const proFiltres = computed(() => {
+  const texte = recherche.value.toLowerCase().trim()
+  if (!texte) return productions.value
+  return productions.value.filter(productions =>
+    productions.numprod.toLowerCase().includes(texte) ||
+    productions.refprod.toLowerCase().includes(texte) ||
+    productions.dateprod.toLowerCase().includes(texte)
+  )
+})
+  //impression
+const imprimerProduction = async (pro) => {
+  try {
+    console.log("Données reçues :", pro)
 
-  const imprimerCommande = (pro) => {
-  // Exemple simple : ouvrir une nouvelle fenêtre avec les détails de la commande
-  const contenu = `
-    <html>
-      <head>
-        <title>Commande ${commande.numcom}</title>
-        <style>
-          body { font-family: Arial; padding: 20px; }
-          h2 { color: rgb(104, 128, 251); }
-        </style>
-      </head>
-      <body>
-        <h2>Commande n° ${commande.numcom}</h2>
-        <p><strong>Date :</strong> ${commande.datecom}</p>
-        <p><strong>Fournisseur :</strong> ${commande.fournisseur}</p>
-        <p><strong>Montant total :</strong> ${commande.montant} FCFA</p>
-        <!-- Tu peux ajouter plus de champs ici -->
-      </body>
-    </html>
-  `
-  const fenetre = window.open('', '_blank')
-  fenetre.document.write(contenu)
-  fenetre.document.close()
-  fenetre.print()
-}
+    // On récupère les détails de la production sélectionnée
+    const res = await fetch(`http://localhost/apiLicence2025/controller/production/getDetailProduction.php?host=localhost&dbname=licence2025&username=root&password=&idprod=${pro.idprod}`);
+    const details = await res.json();
+console.log("Détails de production :", details)
+
+    // Construire le payload pour l'impression PDF
+    const payload = {
+      numprod: pro.numprod,
+      refprod: pro.refprod,
+      date: pro.dateprod,
+      cout: pro.coutTprod,
+      produitFini: {
+       // idArt: details.produitFini.idArt,
+        qte: details.production.qteProduite
+      },
+      matieres: details.matieres.map(m => ({
+        idArt: m.idArt,
+        designation: m.desArt,
+        qteL: m.qteL,
+        puL: m.puL
+      }))
+    };
+
+    // Appel de l’API d’impression
+    const printRes = await fetch('http://localhost/apiLicence2025/controller/etats/impressionProduction.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const blob = await printRes.blob();
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank'); // ouvre le PDF dans un nouvel onglet
+  } catch (err) {
+    console.error("Erreur impression :", err);
+    alert("Impossible d'imprimer la production.");
+  }
+};
+
 
   </script>
   
@@ -84,7 +113,7 @@ const closeDetail = () => {
          
         </div>
         <div class="input-group" style="max-width: 200px;">
-          <input type="text" class="form-control form-control-sm" placeholder="Rechercher...">
+          <input v-model="recherche" type="text" class="form-control form-control-sm" placeholder="Rechercher...">
           <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-search"></i></button>
         </div>
       </div>
@@ -102,22 +131,22 @@ const closeDetail = () => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(pro, index) in productions" :key="index">
+            <tr v-for="(pro, index) in proFiltres" :key="index">
               <td>{{ pro.numprod }}</td>
               <td>{{ pro.refprod }}</td>
               <td>{{ pro.dateprod }}</td>
               <td>{{ pro.coutTprod }} FCFA</td>
               <td class="text-center">
-                <button class="btn btn-sm text-warning border-0 me-1" title="Modifier">
+                <!-- <button class="btn btn-sm text-warning border-0 me-1" title="Modifier">
                   <i class="bi bi-pencil-square"></i>
-                </button>
+                </button> -->
                 <button @click="openDetail(pro)" class="btn btn-sm text-primary border-0 me-1" title="Détails">
                   <i class="bi bi-eye"></i>
                 </button>
-                <button class="btn btn-sm text-danger border-0" title="Supprimer">
+                <!-- <button class="btn btn-sm text-danger border-0" title="Supprimer">
                   <i class="bi bi-trash"></i>
-                </button>
-                <button @click="imprimerCommande(pro)" class="btn btn-sm text-success border-0 me-1" title="Imprimer">
+                </button> -->
+                <button @click="imprimerProduction(pro)" class="btn btn-sm text-success border-0 me-1" title="Imprimer">
                   <i class="bi bi-printer"></i>
                 </button>
               </td>
@@ -125,7 +154,8 @@ const closeDetail = () => {
           </tbody>
         </table>
       </div>
-  
+      <!-- total ligne -->
+         <div class="text-muted justify-content-right mt-3">Total de production : {{ proFiltres.length  }}</div>
       
     </div>
      <!-- Modal d’AJOUT -->

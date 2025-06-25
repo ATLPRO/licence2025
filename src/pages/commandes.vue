@@ -115,31 +115,47 @@ const comFiltres = computed(() => {
   )
 })
 
-const imprimerCommande = (commande) => {
-  // Exemple simple : ouvrir une nouvelle fenêtre avec les détails de la commande
-  const contenu = `
-    <html>
-      <head>
-        <title>Commande ${commande.numcom}</title>
-        <style>
-          body { font-family: Arial; padding: 20px; }
-          h2 { color: rgb(104, 128, 251); }
-        </style>
-      </head>
-      <body>
-        <h2>Commande n° ${commande.numcom}</h2>
-        <p><strong>Date :</strong> ${commande.datecom}</p>
-        <p><strong>Fournisseur :</strong> ${commande.nomfour}</p>
-        <p><strong>Montant total :</strong> ${commande.montantTcom} FCFA</p>
-        <!-- Tu peux ajouter plus de champs ici -->
-      </body>
-    </html>
-  `
-  const fenetre = window.open('', '_blank')
-  fenetre.document.write(contenu)
-  fenetre.document.close()
-  fenetre.print()
-}
+const imprimerCommande = async (commande) => {
+  try {
+    // Récupère les lignes via une API ou les stocke au moment de l’enregistrement
+    const res = await fetch('http://localhost/apiLicence2025/controller/commande/detailcom.php?host=localhost&dbname=licence2025&username=root&password=', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ numcom: commande.numcom })
+    });
+
+    const lignes = await res.json();
+
+    const payload = {
+      numcom: commande.numcom,
+      refcom: commande.refcom,
+      datecom: commande.datecom,
+      nomfour: commande.nomfour,
+      nomMag: commande.nomMag,
+      lignes: lignes.map(l => ({
+        designation: l.desArt,
+        unite: l.intituleU,
+        qteC: parseFloat(l.qteC),
+        puC: parseFloat(l.puC)
+      }))
+    };
+
+    const pdfRes = await fetch('http://localhost/apiLicence2025/controller/etats/impressionCommande.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const blob = await pdfRes.blob();
+    const url = window.URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  } catch (e) {
+    alert("Erreur d'impression : " + e.message);
+    console.error(e);
+  }
+};
 
   </script>
 

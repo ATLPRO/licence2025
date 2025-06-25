@@ -2,6 +2,8 @@
 import { reactify } from '@vueuse/core'
 import { ref, onMounted, watch, computed,reactive} from 'vue'
 
+const productionEnregistree = ref(false)
+
 const numero = ref('')
 const stockable=ref('')
 const articlesFini = ref([])
@@ -182,7 +184,9 @@ if (
     if (result.success) {
       alert("✅ " + result.message)
       genererNumeroProduction()
-      resetForm()
+      productionEnregistree.value = true;
+
+      //resetForm()
       // reset des champs si besoin
     } else {
       alert("❌ Erreur : " + result.message)
@@ -201,9 +205,14 @@ function resetForm() {
   magasins.value = '';
   magasinArrivee.value = '';
   lignes.value = [];
+   productionEnregistree.value = false;
 }
 //impression
 const imprimerProduction = async () => {
+  if (!productionEnregistree.value) {
+    alert("Veuillez d'abord enregistrer la production avant d'imprimer.");
+    return;
+  }
   const payload = {
     numprod: numero.value,
     refprod: production.value.refprod,
@@ -351,7 +360,9 @@ const imprimerProduction = async () => {
         </div>
         <div class="text-end mt-4">
           <button class="btn btn-primary me-2" @click="enregistrerProduction">Enregistrer</button>
-          <button class="btn btn-outline-dark" @click="imprimerProduction">Imprimer</button>
+          <button class="btn btn-outline-dark" 
+          @click="imprimerProduction"
+           :disabled="!productionEnregistree">Imprimer</button>
         </div>
       </div>
     </div>

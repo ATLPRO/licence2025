@@ -1,6 +1,8 @@
 <script setup>
 import { ref, computed,watch,onMounted,reactive } from 'vue'
 
+const commandeEnregistree = ref(false)
+
 const fournisseur=ref([]);
 const uniteA=ref([]);
 const magasin=ref([])
@@ -151,18 +153,65 @@ const envoyerCommande = async () => {
     if (!res.ok) throw new Error(result.message || 'Erreur lors de l\'envoi');
 
     alert('✅ ' + result.message);
+    genererNumeroCommande()
+    commandeEnregistree.value = true
     // Optionnel : reset du formulaire
-    commande.numero = '';
+   /*  commande.numero = '';
     commande.date = '';
     commande.fournisseurId = '';
     commande.lignes = [];
     reference.value = '';
-    magasins.value = '';
+    magasins.value = ''; */
   } catch (err) {
     alert('❌ Erreur : ' + err.message);
     console.error(err);
   }
 }
+const imprimercommande = async () => {
+  if (!commandeEnregistree.value) {
+    alert("Veuillez enregistrer une commande avant d'imprimer.");
+    return;
+  }
+
+  // Trouver les noms du fournisseur et du magasin
+  const fournisseurInfo = fournisseur.value.find(f => f.idfour === commande.fournisseurId);
+  const magasinInfo = magasin.value.find(m => m.idmag === magasins.value);
+
+  const payload = {
+    numcom: commande.numero,
+    refcom: reference.value,
+    datecom: commande.date,
+    montantTcom: totalCommande.value,
+    nomfour: fournisseurInfo ? fournisseurInfo.nomfour : '',
+    nomMag: magasinInfo ? magasinInfo.nomMag : '',
+    lignes: commande.lignes.map(ligne => {
+      const articleInfo = uniteA.value.find(a => a.idArt === ligne.articleId);
+      return {
+        designation: articleInfo ? articleInfo.desArt : '',
+        unite: articleInfo ? articleInfo.intituleU : '',
+        qteC: ligne.quantite,
+        puC: ligne.prixUnitaire
+      }
+    })
+  };
+
+  try {
+    const res = await fetch('http://localhost/apiLicence2025/controller/etats/impressionCommande.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) throw new Error("Erreur lors de la génération du PDF");
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  } catch (err) {
+    console.error("Erreur impression :", err);
+    alert("Erreur lors de la génération du bon de commande.");
+  }
+};
 
 </script>
 
@@ -248,7 +297,10 @@ const envoyerCommande = async () => {
 
     <div class="mt-4 text-end">
       <button class="btn btn-success" @click="envoyerCommande">Valider l'achat</button>
-      <button class="btn btn-success ms-2">Imprimer</button>
+      <button class="btn btn-success ms-2" 
+      @click="imprimercommande"
+      :disabled="!commandeEnregistree"
+      >Imprimer</button>
     </div>
   </div>
 </template>
