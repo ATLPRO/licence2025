@@ -48,11 +48,11 @@ async function chargerStats() {
     stats.value = await res.json()
   }
 }
-const cards = [
+/* const cards = [
   { key: 'articles', label: 'Articles', icon: 'bi bi-box-seam', color: 'bg-primary' },
   { key: 'fournisseurs', label: 'Fournisseurs', icon: 'bi bi-truck', color: 'bg-success' },
   { key: 'commandes', label: 'Achats', icon: 'bi bi-cart-check', color: 'bg-warning' }
-]
+] */
 
 //const alertes = ref([])
 const alertesMatierePremiere = ref([])

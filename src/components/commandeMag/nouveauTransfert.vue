@@ -24,9 +24,9 @@ async function chargerMagasin() {
 //genere le nemero de commande automatiquement
 async function genererNumeroCommande() {
   try {
-    const res = await fetch('http://localhost/apiLicence2025/controller/commande/genererNumeroCom.php?host=localhost&dbname=licence2025&username=root&password=');
+    const res = await fetch('http://localhost/apiLicence2025/controller/transfert/genererAutoNumTransfert.php?host=localhost&dbname=licence2025&username=root&password=');
     const data = await res.json();
-    commande.numero = data.numcom;
+    commande.numero = data.numT;
   } catch (err) {
     console.error('Erreur lors de la génération du numéro :', err);
   }
@@ -131,6 +131,7 @@ const envoyerCommande = async () => {
   // Construire le payload
   const payload = {
     numT: commande.numero,
+    refT:reference.value,
     dateT: commande.date,
     idMagSrc: magasinDepart.value,
     idMagDest: magasinArrivee.value,
@@ -158,7 +159,9 @@ const envoyerCommande = async () => {
     if (!res.ok) throw new Error(result.message || 'Erreur lors de l\'envoi');
 
     alert('✅ ' + result.message);
+    genererNumeroCommande()
     // Optionnel : reset du formulaire
+    reference.value='';
     commande.numero = '';
     commande.date = '';
     commande.fournisseurId = '';

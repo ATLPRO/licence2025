@@ -25,6 +25,7 @@ const menusComptable = [
   { path: '/fournisseurs', label: 'Fournisseurs', icon: 'bi-truck' },
   { path: '/commande', label: 'Achats', icon: 'bi-basket' },
   { path: '/production', label: 'Production', icon: 'bi-gear' },
+   { path: '/commandeMag', label: 'Commande Magasin', icon: 'bi-cart' },
 ]
 
 onMounted(() => {

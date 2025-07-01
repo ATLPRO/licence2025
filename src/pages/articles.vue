@@ -51,6 +51,10 @@ const closeUnite = () => {
 //Les details sur larticle produit fini
 const articleSelectionnee = ref(null)
 function openDetail(article) {
+  if (role !== 'directeur') {
+    alert("⛔ Action réservée au directeur !");
+    return;
+  }
   if (article.typeArt !== 'produit fini') {
     alert("Veuillez sélectionner un article de type 'produit fini' pour voir les détails.");
     return;
@@ -65,6 +69,10 @@ const closeDetail = () => {
 }
 //ouvrir une nommenclature
 const openNommer = (article) => {
+  if (role !== 'directeur') {
+    alert("⛔ Seul le directeur peut gérer la nomenclature !");
+    return;
+  }
   if (article.typeArt !== 'produit fini') {
     alert("Veuillez sélectionner un article de type 'produit fini' pour gérer sa nomenclature.");
     return;
@@ -80,6 +88,10 @@ const closeNommer = () => {
   shawNommer.value = false
   //codefour.value = null
 }
+//voir l'utilisateur connecter et bloquer ou pas la nommenclature et le detail
+const utilisateur = JSON.parse(localStorage.getItem('utilisateurConnecte')) || {}
+const role = utilisateur?.role // ex: 'directeur' ou 'comptable'
+
 
 const error = ref('')
 const article=ref([])
@@ -197,10 +209,17 @@ const articlesFiltres = computed(() => {
                 <button @click="openModifierModal(article)" class="btn btn-sm text-warning border-0 me-1" title="Modifier">
                   <i class="bi bi-pencil-square"></i>
                 </button>
-                 <button @click="openDetail(article)" class="btn btn-sm text-primary border-0 me-1" title="Détails">
+                 <button 
+                 @click="openDetail(article)" 
+                 class="btn btn-sm text-primary border-0 me-1" 
+                 title="Détails">
                   <i class="bi bi-eye"></i>
+                  
                 </button>
-                 <button @click="openNommer(article)" class="btn btn-sm text-success border-0 me-1" title="Définir la nomenclature">
+                 <button 
+                 @click="openNommer(article)" 
+                 class="btn btn-sm text-success border-0 me-1" 
+                 title="Définir la nomenclature">
                   <i class="bi bi-diagram-3-fill"></i>
                 </button>
 
@@ -336,6 +355,11 @@ const articlesFiltres = computed(() => {
 thead,tbody{
     font-size: 12px;
 }
+/* button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+} */
+
 @media (max-width: 768px) {
   .table th, .table td {
     font-size: 0.85rem;
